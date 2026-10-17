@@ -1,0 +1,627 @@
+{
+  "generatedAt": "2026-10-17T01:06:10.612Z",
+  "generator": "sim/economics.mjs",
+  "defaults": {
+    "_comment": "LOCKED launch defaults (2026-10-16). Single source for the sim, the program init script, and the frontend. Amounts in lamports, ratios in bps.",
+    "mintPriceLamports": 250000000,
+    "poolBps": 7000,
+    "windowSeconds": 43200,
+    "tiers": [
+      {
+        "name": "Rust Bucket",
+        "oddsBps": 5000,
+        "depth": 100
+      },
+      {
+        "name": "Reef Runner",
+        "oddsBps": 2500,
+        "depth": 220
+      },
+      {
+        "name": "Kelp Cutter",
+        "oddsBps": 1300,
+        "depth": 480
+      },
+      {
+        "name": "Trench Diver",
+        "oddsBps": 800,
+        "depth": 1050
+      },
+      {
+        "name": "Leviathan",
+        "oddsBps": 350,
+        "depth": 2300
+      },
+      {
+        "name": "The Abyssal One",
+        "oddsBps": 50,
+        "depth": 5000
+      }
+    ],
+    "reinforce": {
+      "_formula": "cost(L, tier) = lamportsPerBaseDepth * baseDepth * (growthBps/10000)^(L-1), rounded up",
+      "bpsPerLevel": 800,
+      "maxLevel": 8,
+      "lamportsPerBaseDepth": 200000,
+      "growthBps": 12500
+    },
+    "mergeFeeLamports": [
+      30000000,
+      60000000,
+      120000000,
+      250000000,
+      500000000
+    ],
+    "harbor": {
+      "_formula": "cost of slot k beyond start (k = 0, 1, ...) = baseLamports * (growthBps/10000)^k, rounded up",
+      "startSlots": 4,
+      "maxSlots": 24,
+      "baseLamports": 50000000,
+      "growthBps": 12500
+    }
+  },
+  "groupFloorPct": -30,
+  "defaultScenario": "fastDecline",
+  "scenarioOrder": [
+    "fastDecline",
+    "base",
+    "weak",
+    "topHeavy"
+  ],
+  "scenarios": {
+    "base": {
+      "label": "Base launch",
+      "description": "Ramp to 200 mints/day over 20 days, hold 20 days, then decline 6%/day.",
+      "days": 120,
+      "cohorts": [
+        {
+          "week": 0,
+          "shareOfMintsPct": 2.3,
+          "paidIn": 52.5,
+          "earned": 167.79,
+          "roiPct": 219.6
+        },
+        {
+          "week": 1,
+          "shareOfMintsPct": 7.5,
+          "paidIn": 175,
+          "earned": 348.94,
+          "roiPct": 99.4
+        },
+        {
+          "week": 2,
+          "shareOfMintsPct": 12.8,
+          "paidIn": 297.5,
+          "earned": 385.72,
+          "roiPct": 29.7
+        },
+        {
+          "week": 3,
+          "shareOfMintsPct": 15,
+          "paidIn": 350,
+          "earned": 299.92,
+          "roiPct": -14.3
+        },
+        {
+          "week": 4,
+          "shareOfMintsPct": 15,
+          "paidIn": 350,
+          "earned": 199.13,
+          "roiPct": -43.1
+        },
+        {
+          "week": 5,
+          "shareOfMintsPct": 14.9,
+          "paidIn": 347.09,
+          "earned": 127.3,
+          "roiPct": -63.3
+        },
+        {
+          "week": 6,
+          "shareOfMintsPct": 11.2,
+          "paidIn": 261.16,
+          "earned": 58.94,
+          "roiPct": -77.4
+        },
+        {
+          "week": 7,
+          "shareOfMintsPct": 7.4,
+          "paidIn": 171.59,
+          "earned": 23.85,
+          "roiPct": -86.1
+        },
+        {
+          "week": 8,
+          "shareOfMintsPct": 4.8,
+          "paidIn": 112.74,
+          "earned": 9.85,
+          "roiPct": -91.3
+        },
+        {
+          "week": 9,
+          "shareOfMintsPct": 3.2,
+          "paidIn": 74.08,
+          "earned": 4.1,
+          "roiPct": -94.5
+        },
+        {
+          "week": 10,
+          "shareOfMintsPct": 2.1,
+          "paidIn": 48.67,
+          "earned": 1.71,
+          "roiPct": -96.5
+        },
+        {
+          "week": 11,
+          "shareOfMintsPct": 1.4,
+          "paidIn": 31.98,
+          "earned": 0.71,
+          "roiPct": -97.8
+        },
+        {
+          "week": 12,
+          "shareOfMintsPct": 0.9,
+          "paidIn": 21.01,
+          "earned": 0.29,
+          "roiPct": -98.6
+        },
+        {
+          "week": 13,
+          "shareOfMintsPct": 0.6,
+          "paidIn": 13.81,
+          "earned": 0.11,
+          "roiPct": -99.2
+        },
+        {
+          "week": 14,
+          "shareOfMintsPct": 0.4,
+          "paidIn": 9.07,
+          "earned": 0.04,
+          "roiPct": -99.5
+        },
+        {
+          "week": 15,
+          "shareOfMintsPct": 0.3,
+          "paidIn": 5.96,
+          "earned": 0.01,
+          "roiPct": -99.8
+        },
+        {
+          "week": 16,
+          "shareOfMintsPct": 0.2,
+          "paidIn": 3.92,
+          "earned": 0,
+          "roiPct": -99.9
+        },
+        {
+          "week": 17,
+          "shareOfMintsPct": 0,
+          "paidIn": 0.44,
+          "earned": 0,
+          "roiPct": -100
+        }
+      ],
+      "totals": {
+        "paidIn": 2326.52,
+        "paidOut": 1628.41,
+        "stillStreaming": 0.15,
+        "treasury": 697.96
+      },
+      "groupRoiPct": -30,
+      "capitalInLossPct": 77.4,
+      "capitalLostOverHalfPct": 47.3
+    },
+    "weak": {
+      "label": "Half volume",
+      "description": "Same shape as base at half the volume. Identical percentages: volume alone does not change cohort returns.",
+      "days": 120,
+      "cohorts": [
+        {
+          "week": 0,
+          "shareOfMintsPct": 2.3,
+          "paidIn": 26.25,
+          "earned": 83.89,
+          "roiPct": 219.6
+        },
+        {
+          "week": 1,
+          "shareOfMintsPct": 7.5,
+          "paidIn": 87.5,
+          "earned": 174.47,
+          "roiPct": 99.4
+        },
+        {
+          "week": 2,
+          "shareOfMintsPct": 12.8,
+          "paidIn": 148.75,
+          "earned": 192.86,
+          "roiPct": 29.7
+        },
+        {
+          "week": 3,
+          "shareOfMintsPct": 15,
+          "paidIn": 175,
+          "earned": 149.96,
+          "roiPct": -14.3
+        },
+        {
+          "week": 4,
+          "shareOfMintsPct": 15,
+          "paidIn": 175,
+          "earned": 99.56,
+          "roiPct": -43.1
+        },
+        {
+          "week": 5,
+          "shareOfMintsPct": 14.9,
+          "paidIn": 173.54,
+          "earned": 63.65,
+          "roiPct": -63.3
+        },
+        {
+          "week": 6,
+          "shareOfMintsPct": 11.2,
+          "paidIn": 130.58,
+          "earned": 29.47,
+          "roiPct": -77.4
+        },
+        {
+          "week": 7,
+          "shareOfMintsPct": 7.4,
+          "paidIn": 85.8,
+          "earned": 11.93,
+          "roiPct": -86.1
+        },
+        {
+          "week": 8,
+          "shareOfMintsPct": 4.8,
+          "paidIn": 56.37,
+          "earned": 4.92,
+          "roiPct": -91.3
+        },
+        {
+          "week": 9,
+          "shareOfMintsPct": 3.2,
+          "paidIn": 37.04,
+          "earned": 2.05,
+          "roiPct": -94.5
+        },
+        {
+          "week": 10,
+          "shareOfMintsPct": 2.1,
+          "paidIn": 24.34,
+          "earned": 0.85,
+          "roiPct": -96.5
+        },
+        {
+          "week": 11,
+          "shareOfMintsPct": 1.4,
+          "paidIn": 15.99,
+          "earned": 0.35,
+          "roiPct": -97.8
+        },
+        {
+          "week": 12,
+          "shareOfMintsPct": 0.9,
+          "paidIn": 10.51,
+          "earned": 0.14,
+          "roiPct": -98.6
+        },
+        {
+          "week": 13,
+          "shareOfMintsPct": 0.6,
+          "paidIn": 6.9,
+          "earned": 0.06,
+          "roiPct": -99.2
+        },
+        {
+          "week": 14,
+          "shareOfMintsPct": 0.4,
+          "paidIn": 4.54,
+          "earned": 0.02,
+          "roiPct": -99.5
+        },
+        {
+          "week": 15,
+          "shareOfMintsPct": 0.3,
+          "paidIn": 2.98,
+          "earned": 0.01,
+          "roiPct": -99.8
+        },
+        {
+          "week": 16,
+          "shareOfMintsPct": 0.2,
+          "paidIn": 1.96,
+          "earned": 0,
+          "roiPct": -99.9
+        },
+        {
+          "week": 17,
+          "shareOfMintsPct": 0,
+          "paidIn": 0.22,
+          "earned": 0,
+          "roiPct": -100
+        }
+      ],
+      "totals": {
+        "paidIn": 1163.26,
+        "paidOut": 814.2,
+        "stillStreaming": 0.08,
+        "treasury": 348.98
+      },
+      "groupRoiPct": -30,
+      "capitalInLossPct": 77.4,
+      "capitalLostOverHalfPct": 47.3
+    },
+    "fastDecline": {
+      "label": "Fast decline",
+      "description": "Ramp over 20 days, only a 5-day peak, then decline 12%/day.",
+      "days": 120,
+      "cohorts": [
+        {
+          "week": 0,
+          "shareOfMintsPct": 4.5,
+          "paidIn": 52.5,
+          "earned": 142.9,
+          "roiPct": 172.2
+        },
+        {
+          "week": 1,
+          "shareOfMintsPct": 15,
+          "paidIn": 175,
+          "earned": 265.97,
+          "roiPct": 52
+        },
+        {
+          "week": 2,
+          "shareOfMintsPct": 25.5,
+          "paidIn": 297.5,
+          "earned": 244.67,
+          "roiPct": -17.8
+        },
+        {
+          "week": 3,
+          "shareOfMintsPct": 28.6,
+          "paidIn": 333.68,
+          "earned": 130.1,
+          "roiPct": -61
+        },
+        {
+          "week": 4,
+          "shareOfMintsPct": 15,
+          "paidIn": 175.31,
+          "earned": 27.49,
+          "roiPct": -84.3
+        },
+        {
+          "week": 5,
+          "shareOfMintsPct": 6.5,
+          "paidIn": 75.68,
+          "earned": 4.8,
+          "roiPct": -93.7
+        },
+        {
+          "week": 6,
+          "shareOfMintsPct": 2.8,
+          "paidIn": 32.67,
+          "earned": 0.87,
+          "roiPct": -97.3
+        },
+        {
+          "week": 7,
+          "shareOfMintsPct": 1.2,
+          "paidIn": 14.11,
+          "earned": 0.16,
+          "roiPct": -98.9
+        },
+        {
+          "week": 8,
+          "shareOfMintsPct": 0.5,
+          "paidIn": 6.09,
+          "earned": 0.03,
+          "roiPct": -99.5
+        },
+        {
+          "week": 9,
+          "shareOfMintsPct": 0.2,
+          "paidIn": 2.63,
+          "earned": 0.01,
+          "roiPct": -99.8
+        },
+        {
+          "week": 10,
+          "shareOfMintsPct": 0.1,
+          "paidIn": 1.13,
+          "earned": 0,
+          "roiPct": -99.9
+        },
+        {
+          "week": 11,
+          "shareOfMintsPct": 0,
+          "paidIn": 0.49,
+          "earned": 0,
+          "roiPct": -100
+        },
+        {
+          "week": 12,
+          "shareOfMintsPct": 0,
+          "paidIn": 0.21,
+          "earned": 0,
+          "roiPct": -100
+        },
+        {
+          "week": 13,
+          "shareOfMintsPct": 0,
+          "paidIn": 0.09,
+          "earned": 0,
+          "roiPct": -100
+        },
+        {
+          "week": 14,
+          "shareOfMintsPct": 0,
+          "paidIn": 0.04,
+          "earned": 0,
+          "roiPct": -100
+        },
+        {
+          "week": 15,
+          "shareOfMintsPct": 0,
+          "paidIn": 0.02,
+          "earned": 0,
+          "roiPct": -100
+        }
+      ],
+      "totals": {
+        "paidIn": 1167.16,
+        "paidOut": 817.01,
+        "stillStreaming": 0,
+        "treasury": 350.15
+      },
+      "groupRoiPct": -30,
+      "capitalInLossPct": 80.5,
+      "capitalLostOverHalfPct": 55
+    },
+    "topHeavy": {
+      "label": "Most buyers near the top",
+      "description": "Base shape, but 60% of all mints land in the peak week (week 3).",
+      "days": 120,
+      "cohorts": [
+        {
+          "week": 0,
+          "shareOfMintsPct": 1.1,
+          "paidIn": 52.5,
+          "earned": 187.5,
+          "roiPct": 257.1
+        },
+        {
+          "week": 1,
+          "shareOfMintsPct": 3.5,
+          "paidIn": 175,
+          "earned": 414.65,
+          "roiPct": 136.9
+        },
+        {
+          "week": 2,
+          "shareOfMintsPct": 6,
+          "paidIn": 297.5,
+          "earned": 497.42,
+          "roiPct": 67.2
+        },
+        {
+          "week": 3,
+          "shareOfMintsPct": 60,
+          "paidIn": 2964.78,
+          "earned": 2188.06,
+          "roiPct": -26.2
+        },
+        {
+          "week": 4,
+          "shareOfMintsPct": 7.1,
+          "paidIn": 350,
+          "earned": 75.45,
+          "roiPct": -78.4
+        },
+        {
+          "week": 5,
+          "shareOfMintsPct": 7,
+          "paidIn": 347.09,
+          "earned": 51.88,
+          "roiPct": -85.1
+        },
+        {
+          "week": 6,
+          "shareOfMintsPct": 5.3,
+          "paidIn": 261.16,
+          "earned": 25.43,
+          "roiPct": -90.3
+        },
+        {
+          "week": 7,
+          "shareOfMintsPct": 3.5,
+          "paidIn": 171.59,
+          "earned": 10.65,
+          "roiPct": -93.8
+        },
+        {
+          "week": 8,
+          "shareOfMintsPct": 2.3,
+          "paidIn": 112.74,
+          "earned": 4.49,
+          "roiPct": -96
+        },
+        {
+          "week": 9,
+          "shareOfMintsPct": 1.5,
+          "paidIn": 74.08,
+          "earned": 1.89,
+          "roiPct": -97.4
+        },
+        {
+          "week": 10,
+          "shareOfMintsPct": 1,
+          "paidIn": 48.67,
+          "earned": 0.79,
+          "roiPct": -98.4
+        },
+        {
+          "week": 11,
+          "shareOfMintsPct": 0.6,
+          "paidIn": 31.98,
+          "earned": 0.33,
+          "roiPct": -99
+        },
+        {
+          "week": 12,
+          "shareOfMintsPct": 0.4,
+          "paidIn": 21.01,
+          "earned": 0.13,
+          "roiPct": -99.4
+        },
+        {
+          "week": 13,
+          "shareOfMintsPct": 0.3,
+          "paidIn": 13.81,
+          "earned": 0.05,
+          "roiPct": -99.6
+        },
+        {
+          "week": 14,
+          "shareOfMintsPct": 0.2,
+          "paidIn": 9.07,
+          "earned": 0.02,
+          "roiPct": -99.8
+        },
+        {
+          "week": 15,
+          "shareOfMintsPct": 0.1,
+          "paidIn": 5.96,
+          "earned": 0.01,
+          "roiPct": -99.9
+        },
+        {
+          "week": 16,
+          "shareOfMintsPct": 0.1,
+          "paidIn": 3.92,
+          "earned": 0,
+          "roiPct": -100
+        },
+        {
+          "week": 17,
+          "shareOfMintsPct": 0,
+          "paidIn": 0.44,
+          "earned": 0,
+          "roiPct": -100
+        }
+      ],
+      "totals": {
+        "paidIn": 4941.29,
+        "paidOut": 3458.75,
+        "stillStreaming": 0.15,
+        "treasury": 1482.39
+      },
+      "groupRoiPct": -30,
+      "capitalInLossPct": 89.4,
+      "capitalLostOverHalfPct": 29.4
+    }
+  }
+}

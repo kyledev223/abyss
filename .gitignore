@@ -1,0 +1,14 @@
+.anchor
+.DS_Store
+target
+**/*.rs.bk
+node_modules
+test-ledger
+.yarn
+.surfpool
+
+# secrets: never commit keypairs or env files
+*-keypair.json
+keys/
+.env
+.env*.local

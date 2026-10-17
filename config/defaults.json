@@ -1,0 +1,38 @@
+{
+  "_comment": "LOCKED launch defaults (2026-10-16). Single source for the sim, the program init script, and the frontend. Amounts in lamports, ratios in bps.",
+  "mintPriceLamports": 250000000,
+  "poolBps": 7000,
+  "windowSeconds": 43200,
+  "tiers": [
+    { "name": "Rust Bucket",     "oddsBps": 5000, "depth": 100 },
+    { "name": "Reef Runner",     "oddsBps": 2500, "depth": 220 },
+    { "name": "Kelp Cutter",     "oddsBps": 1300, "depth": 480 },
+    { "name": "Trench Diver",    "oddsBps": 800,  "depth": 1050 },
+    { "name": "Leviathan",       "oddsBps": 350,  "depth": 2300 },
+    { "name": "The Abyssal One", "oddsBps": 50,   "depth": 5000 }
+  ],
+  "reinforce": {
+    "_formula": "cost(L, tier) = lamportsPerBaseDepth * baseDepth * (growthBps/10000)^(L-1), rounded up",
+    "bpsPerLevel": 800,
+    "maxLevel": 8,
+    "lamportsPerBaseDepth": 200000,
+    "growthBps": 12500
+  },
+  "mergeFeeLamports": [30000000, 60000000, 120000000, 250000000, 500000000],
+  "harbor": {
+    "_formula": "cost of slot k beyond start (k = 0, 1, ...) = baseLamports * (growthBps/10000)^k, rounded up",
+    "startSlots": 4,
+    "maxSlots": 24,
+    "baseLamports": 50000000,
+    "growthBps": 12500
+  },
+  "_comment_unlocked": "Not yet reviewed: maxLiveSubs and expedition values are placeholders.",
+  "maxLiveSubs": 25000,
+  "expedition": {
+    "_formula": "boost = +boostBps of the sub's depth for hours * boostHoursPerHour hours; EV ~ 0.9x the earnings lost while away",
+    "boostBps": 10000,
+    "boostHoursPerHour": 2,
+    "boostChanceBps": 4500,
+    "barnacleChanceBps": 2500
+  }
+}

@@ -1,0 +1,44 @@
+[package]
+name = "abyss-haul"
+version = "0.1.0"
+description = "Created with Anchor"
+edition.workspace = true
+rust-version.workspace = true
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "abyss_haul"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+# Use Switchboard's devnet program ID (default is mainnet).
+devnet = []
+
+
+[dependencies]
+anchor-lang = { version = "1.2.1", features = ["event-cpi"] }
+# Required by #[zero_copy]; min_const_generics makes [Checkpoint; 720] Pod.
+bytemuck = { version = "1", features = ["derive", "min_const_generics"] }
+
+[dev-dependencies]
+litesvm = "0.18.0"
+solana-message = "4.6.0"
+solana-transaction = { version = "4.3.0", features = ["wincode"] }
+solana-signer = "3.0.0"
+solana-keypair = "3.0.1"
+proptest = "1"
+solana-account = "4.7.0"
+solana-compute-budget-interface = "3.1.0"
+solana-system-interface = { version = "3.3.0", features = ["bincode"] }
+serde_json = "1"
+
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }
