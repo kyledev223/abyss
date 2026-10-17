@@ -12,3 +12,4 @@ test-ledger
 keys/
 .env
 .env*.local
+client/.devnet/

@@ -1,0 +1,3624 @@
+{
+  "address": "9qe9i4BVKb3UzA9fAHfdpDnwCvymk7vBx4zkgGRBJw8o",
+  "metadata": {
+    "name": "abyss_haul",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "docs": [
+    "Abyss Haul. Instruction reference and formulas: docs/DESIGN.md."
+  ],
+  "instructions": [
+    {
+      "name": "accept_admin",
+      "discriminator": [
+        112,
+        42,
+        45,
+        90,
+        116,
+        181,
+        13,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "new_admin",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim",
+      "discriminator": [
+        62,
+        198,
+        214,
+        193,
+        213,
+        159,
+        108,
+        210
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "crank",
+      "discriminator": [
+        0,
+        232,
+        3,
+        195,
+        124,
+        117,
+        105,
+        53
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "dock",
+      "discriminator": [
+        209,
+        38,
+        213,
+        182,
+        121,
+        90,
+        178,
+        15
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sub",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset"
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mpl_core",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "expand_harbor",
+      "discriminator": [
+        82,
+        249,
+        209,
+        193,
+        199,
+        224,
+        38,
+        216
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury",
+          "writable": true
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "expedition_return_commit",
+      "discriminator": [
+        189,
+        112,
+        131,
+        188,
+        90,
+        168,
+        180,
+        17
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "harbor",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sub",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "sub.asset",
+                "account": "Sub"
+              }
+            ]
+          }
+        },
+        {
+          "name": "randomness"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "expedition_return_reveal",
+      "discriminator": [
+        138,
+        65,
+        195,
+        135,
+        99,
+        197,
+        107,
+        216
+      ],
+      "accounts": [
+        {
+          "name": "cranker",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true
+        },
+        {
+          "name": "sub",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "sub.asset",
+                "account": "Sub"
+              }
+            ]
+          }
+        },
+        {
+          "name": "randomness"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "expedition_start",
+      "discriminator": [
+        54,
+        178,
+        7,
+        205,
+        253,
+        251,
+        163,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sub",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "sub.asset",
+                "account": "Sub"
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "hours",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "fund_pool",
+      "discriminator": [
+        36,
+        57,
+        233,
+        176,
+        181,
+        20,
+        87,
+        159
+      ],
+      "accounts": [
+        {
+          "name": "funder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "deployer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program_data",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  131,
+                  83,
+                  97,
+                  74,
+                  47,
+                  69,
+                  208,
+                  134,
+                  115,
+                  233,
+                  218,
+                  65,
+                  188,
+                  228,
+                  231,
+                  77,
+                  221,
+                  224,
+                  135,
+                  60,
+                  125,
+                  112,
+                  186,
+                  242,
+                  79,
+                  92,
+                  20,
+                  232,
+                  157,
+                  5,
+                  221,
+                  228
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                2,
+                168,
+                246,
+                145,
+                78,
+                136,
+                161,
+                176,
+                226,
+                16,
+                21,
+                62,
+                247,
+                99,
+                174,
+                43,
+                0,
+                194,
+                185,
+                61,
+                22,
+                193,
+                36,
+                210,
+                192,
+                83,
+                122,
+                16,
+                4,
+                128,
+                0,
+                0
+              ]
+            }
+          }
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "docs": [
+            "Created by a top-level create_account (owner = this program) earlier in the same transaction."
+          ],
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "collection",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mpl_core",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "treasury",
+          "type": "pubkey"
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "Params"
+            }
+          }
+        },
+        {
+          "name": "uri_base",
+          "type": "string"
+        },
+        {
+          "name": "collection_uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "merge",
+      "discriminator": [
+        148,
+        141,
+        236,
+        47,
+        174,
+        126,
+        69,
+        111
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury",
+          "writable": true
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sub_a",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset_a"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sub_b",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset_b"
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset_a",
+          "writable": true
+        },
+        {
+          "name": "asset_b",
+          "writable": true
+        },
+        {
+          "name": "new_asset",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  115,
+                  115,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.minted_count",
+                "account": "Pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "new_sub",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "new_asset"
+              }
+            ]
+          }
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mpl_core",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "mint_commit",
+      "discriminator": [
+        127,
+        210,
+        140,
+        35,
+        67,
+        169,
+        144,
+        165
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury",
+          "writable": true
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "randomness"
+        },
+        {
+          "name": "pending",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pool.minted_count",
+                "account": "Pool"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "mint_reveal",
+      "discriminator": [
+        27,
+        133,
+        119,
+        108,
+        109,
+        97,
+        170,
+        236
+      ],
+      "accounts": [
+        {
+          "name": "cranker",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "writable": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pending",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  101,
+                  110,
+                  100,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pending.mint_index",
+                "account": "PendingMint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "randomness"
+        },
+        {
+          "name": "asset",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  115,
+                  115,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "pending.mint_index",
+                "account": "PendingMint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sub",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset"
+              }
+            ]
+          }
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mpl_core",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "open_harbor",
+      "discriminator": [
+        249,
+        185,
+        160,
+        229,
+        94,
+        139,
+        81,
+        11
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "propose_admin",
+      "discriminator": [
+        121,
+        214,
+        199,
+        212,
+        87,
+        39,
+        117,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "reinforce",
+      "discriminator": [
+        254,
+        170,
+        163,
+        213,
+        240,
+        38,
+        189,
+        205
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "treasury",
+          "writable": true
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sub",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset"
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "set_pause",
+      "discriminator": [
+        63,
+        32,
+        154,
+        2,
+        56,
+        103,
+        79,
+        45
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "mint",
+          "type": "bool"
+        },
+        {
+          "name": "upgrades",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "settle",
+      "discriminator": [
+        175,
+        42,
+        185,
+        87,
+        144,
+        131,
+        102,
+        212
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "harbor.owner",
+                "account": "Harbor"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "undock",
+      "discriminator": [
+        142,
+        71,
+        239,
+        160,
+        80,
+        225,
+        147,
+        15
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "checkpoints",
+          "writable": true
+        },
+        {
+          "name": "harbor",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  114,
+                  98,
+                  111,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sub",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset"
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset",
+          "writable": true
+        },
+        {
+          "name": "collection",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mpl_core",
+          "address": "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_config",
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "Params"
+            }
+          }
+        },
+        {
+          "name": "treasury",
+          "type": "pubkey"
+        },
+        {
+          "name": "uri_base",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Checkpoints",
+      "discriminator": [
+        141,
+        3,
+        168,
+        136,
+        95,
+        58,
+        80,
+        245
+      ]
+    },
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "Harbor",
+      "discriminator": [
+        66,
+        20,
+        3,
+        62,
+        182,
+        142,
+        182,
+        1
+      ]
+    },
+    {
+      "name": "PendingMint",
+      "discriminator": [
+        49,
+        154,
+        10,
+        122,
+        115,
+        84,
+        32,
+        175
+      ]
+    },
+    {
+      "name": "Pool",
+      "discriminator": [
+        241,
+        154,
+        109,
+        4,
+        17,
+        177,
+        109,
+        188
+      ]
+    },
+    {
+      "name": "Sub",
+      "discriminator": [
+        204,
+        213,
+        163,
+        209,
+        41,
+        34,
+        182,
+        23
+      ]
+    },
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "Claimed",
+      "discriminator": [
+        217,
+        192,
+        123,
+        72,
+        108,
+        150,
+        248,
+        33
+      ]
+    },
+    {
+      "name": "ConfigUpdated",
+      "discriminator": [
+        40,
+        241,
+        230,
+        122,
+        11,
+        19,
+        198,
+        194
+      ]
+    },
+    {
+      "name": "Docked",
+      "discriminator": [
+        36,
+        31,
+        237,
+        146,
+        190,
+        25,
+        63,
+        217
+      ]
+    },
+    {
+      "name": "ExpeditionReturned",
+      "discriminator": [
+        51,
+        76,
+        120,
+        241,
+        251,
+        169,
+        65,
+        142
+      ]
+    },
+    {
+      "name": "ExpeditionStarted",
+      "discriminator": [
+        183,
+        32,
+        29,
+        124,
+        102,
+        77,
+        166,
+        252
+      ]
+    },
+    {
+      "name": "FeePaid",
+      "discriminator": [
+        159,
+        12,
+        52,
+        212,
+        249,
+        36,
+        24,
+        18
+      ]
+    },
+    {
+      "name": "HarborExpanded",
+      "discriminator": [
+        109,
+        5,
+        126,
+        177,
+        125,
+        242,
+        86,
+        86
+      ]
+    },
+    {
+      "name": "Merged",
+      "discriminator": [
+        57,
+        129,
+        241,
+        73,
+        156,
+        41,
+        126,
+        251
+      ]
+    },
+    {
+      "name": "MintCommitted",
+      "discriminator": [
+        251,
+        226,
+        190,
+        44,
+        132,
+        80,
+        96,
+        125
+      ]
+    },
+    {
+      "name": "PauseSet",
+      "discriminator": [
+        175,
+        57,
+        198,
+        136,
+        192,
+        66,
+        204,
+        73
+      ]
+    },
+    {
+      "name": "PoolFunded",
+      "discriminator": [
+        164,
+        221,
+        242,
+        68,
+        164,
+        64,
+        24,
+        214
+      ]
+    },
+    {
+      "name": "Reinforced",
+      "discriminator": [
+        49,
+        222,
+        85,
+        167,
+        118,
+        183,
+        198,
+        80
+      ]
+    },
+    {
+      "name": "SubMinted",
+      "discriminator": [
+        239,
+        133,
+        220,
+        74,
+        28,
+        39,
+        202,
+        166
+      ]
+    },
+    {
+      "name": "Undocked",
+      "discriminator": [
+        221,
+        83,
+        228,
+        219,
+        110,
+        209,
+        123,
+        211
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6001,
+      "name": "BoostAlreadyActive",
+      "msg": "This harbor already has an active boost"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidBoostWindow",
+      "msg": "Boost must end on a future hour within the boost ring"
+    },
+    {
+      "code": 6003,
+      "name": "BoostRingCollision",
+      "msg": "Boost ring slot is held by a different hour"
+    },
+    {
+      "code": 6004,
+      "name": "InsufficientDepth",
+      "msg": "Insufficient docked depth"
+    },
+    {
+      "code": 6005,
+      "name": "NotAdmin",
+      "msg": "Only the admin can do this"
+    },
+    {
+      "code": 6006,
+      "name": "NotPendingAdmin",
+      "msg": "Only the pending admin can accept"
+    },
+    {
+      "code": 6007,
+      "name": "NotUpgradeAuthority",
+      "msg": "Only the program upgrade authority can initialize"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidParams",
+      "msg": "Configuration value out of bounds"
+    },
+    {
+      "code": 6009,
+      "name": "MintPaused",
+      "msg": "Minting is paused"
+    },
+    {
+      "code": 6010,
+      "name": "UpgradesPaused",
+      "msg": "Upgrades are paused"
+    },
+    {
+      "code": 6011,
+      "name": "SupplyCapReached",
+      "msg": "Fleet is at its live supply cap"
+    },
+    {
+      "code": 6012,
+      "name": "NotOwner",
+      "msg": "You do not own this sub"
+    },
+    {
+      "code": 6013,
+      "name": "WrongSubState",
+      "msg": "Sub is not in the required state"
+    },
+    {
+      "code": 6014,
+      "name": "HarborFull",
+      "msg": "Harbor has no free dock slot"
+    },
+    {
+      "code": 6015,
+      "name": "HarborMaxed",
+      "msg": "Harbor is at its maximum size"
+    },
+    {
+      "code": 6016,
+      "name": "MaxLevel",
+      "msg": "Sub is already at max reinforce level"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidMerge",
+      "msg": "Subs must be different, of the same tier, and below the top tier"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidAsset",
+      "msg": "Not a valid Metaplex Core asset"
+    },
+    {
+      "code": 6019,
+      "name": "VaultBelowRent",
+      "msg": "Vault cannot pay without dropping below rent exemption"
+    },
+    {
+      "code": 6020,
+      "name": "RentDepositTooSmall",
+      "msg": "Rent deposit does not cover reveal costs"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidRandomness",
+      "msg": "Not a valid Switchboard randomness account"
+    },
+    {
+      "code": 6022,
+      "name": "RandomnessNotFresh",
+      "msg": "Randomness must be committed in the previous slot and unrevealed"
+    },
+    {
+      "code": 6023,
+      "name": "RandomnessNotRevealed",
+      "msg": "Randomness not revealed yet"
+    },
+    {
+      "code": 6024,
+      "name": "InvalidExpeditionHours",
+      "msg": "Expedition length must be 1 to 6 hours"
+    },
+    {
+      "code": 6025,
+      "name": "ExpeditionActive",
+      "msg": "Harbor already has a sub on an expedition"
+    },
+    {
+      "code": 6026,
+      "name": "ExpeditionCooldown",
+      "msg": "Next expedition is not available yet"
+    },
+    {
+      "code": 6027,
+      "name": "StillAway",
+      "msg": "Sub has not returned yet"
+    }
+  ],
+  "types": [
+    {
+      "name": "Checkpoint",
+      "docs": [
+        "u128 split into halves so the layout is identical on the host and on SBF."
+      ],
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hour",
+            "type": "i64"
+          },
+          {
+            "name": "acc_lo",
+            "type": "u64"
+          },
+          {
+            "name": "acc_hi",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Checkpoints",
+      "docs": [
+        "Ring of accumulator snapshots at hour boundaries where boosts expired (DESIGN.md §5).",
+        "17 KB, larger than a CPI-created account may be, so it is a keypair account created in the",
+        "initialize transaction; its address is bound in `Config`."
+      ],
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "entries",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "Checkpoint"
+                  }
+                },
+                720
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Claimed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Config",
+      "docs": [
+        "Global settings. Seeds: [\"config\"]. Admin is the Squads vault (DESIGN.md §9)."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "docs": [
+              "Two-step admin transfer; Pubkey::default() when none."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "collection",
+            "type": "pubkey"
+          },
+          {
+            "name": "checkpoints",
+            "docs": [
+              "Address of the `Checkpoints` keypair account."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "params",
+            "type": {
+              "defined": {
+                "name": "Params"
+              }
+            }
+          },
+          {
+            "name": "paused_mint",
+            "type": "bool"
+          },
+          {
+            "name": "paused_upgrades",
+            "type": "bool"
+          },
+          {
+            "name": "uri_base",
+            "docs": [
+              "Metadata URI prefix; the asset address is appended."
+            ],
+            "type": "string"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "pool_bump",
+            "type": "u8"
+          },
+          {
+            "name": "vault_bump",
+            "type": "u8"
+          },
+          {
+            "name": "authority_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Docked",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "depth",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExpeditionOutcome",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Nothing"
+          },
+          {
+            "name": "Barnacle",
+            "fields": [
+              {
+                "name": "bit",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "Boost",
+            "fields": [
+              {
+                "name": "extra",
+                "type": "u64"
+              },
+              {
+                "name": "end_hour",
+                "type": "i64"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExpeditionReturned",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "outcome",
+            "type": {
+              "defined": {
+                "name": "ExpeditionOutcome"
+              }
+            }
+          },
+          {
+            "name": "fallback",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExpeditionStarted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "hours",
+            "type": "u8"
+          },
+          {
+            "name": "returns_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeKind",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Mint"
+          },
+          {
+            "name": "Reinforce"
+          },
+          {
+            "name": "Merge"
+          },
+          {
+            "name": "HarborSlot"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeePaid",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "kind",
+            "type": {
+              "defined": {
+                "name": "FeeKind"
+              }
+            }
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "to_pool",
+            "type": "u64"
+          },
+          {
+            "name": "to_treasury",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Harbor",
+      "docs": [
+        "One per player. Seeds: [\"harbor\", owner]."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "slots",
+            "type": "u8"
+          },
+          {
+            "name": "docked",
+            "docs": [
+              "Subs in dock slots, including any away on an expedition."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "rewards",
+            "type": {
+              "defined": {
+                "name": "HarborRewards"
+              }
+            }
+          },
+          {
+            "name": "boost_sub",
+            "docs": [
+              "Sub whose expedition produced the active boost; default when none."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "expedition_sub",
+            "docs": [
+              "Sub currently on an expedition; default when none."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "last_expedition_return",
+            "type": "i64"
+          },
+          {
+            "name": "total_claimed",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "HarborExpanded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "slots",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "HarborRewards",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "depth",
+            "docs": [
+              "Depth of docked subs that are not away. Excludes the boost."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "boost_extra",
+            "type": "u64"
+          },
+          {
+            "name": "boost_end_hour",
+            "type": "i64"
+          },
+          {
+            "name": "acc_snapshot",
+            "type": "u128"
+          },
+          {
+            "name": "owed",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Merged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "burned",
+            "type": {
+              "array": [
+                "pubkey",
+                2
+              ]
+            }
+          },
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "tier",
+            "type": "u8"
+          },
+          {
+            "name": "depth",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MintCommitted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_index",
+            "type": "u64"
+          },
+          {
+            "name": "randomness",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Params",
+      "docs": [
+        "Tunable economics (config/defaults.json). Every change is bounds-checked by `validate`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint_price",
+            "type": "u64"
+          },
+          {
+            "name": "pool_bps",
+            "type": "u16"
+          },
+          {
+            "name": "window",
+            "type": "i64"
+          },
+          {
+            "name": "tier_odds_bps",
+            "type": {
+              "array": [
+                "u16",
+                6
+              ]
+            }
+          },
+          {
+            "name": "tier_depth",
+            "type": {
+              "array": [
+                "u64",
+                6
+              ]
+            }
+          },
+          {
+            "name": "reinforce_bps_per_level",
+            "type": "u16"
+          },
+          {
+            "name": "reinforce_max_level",
+            "type": "u8"
+          },
+          {
+            "name": "reinforce_lamports_per_depth",
+            "type": "u64"
+          },
+          {
+            "name": "reinforce_growth_bps",
+            "type": "u16"
+          },
+          {
+            "name": "merge_fee",
+            "type": {
+              "array": [
+                "u64",
+                5
+              ]
+            }
+          },
+          {
+            "name": "harbor_start_slots",
+            "type": "u8"
+          },
+          {
+            "name": "harbor_max_slots",
+            "type": "u8"
+          },
+          {
+            "name": "slot_base_lamports",
+            "type": "u64"
+          },
+          {
+            "name": "slot_growth_bps",
+            "type": "u16"
+          },
+          {
+            "name": "max_live_subs",
+            "type": "u32"
+          },
+          {
+            "name": "expedition_boost_bps",
+            "type": "u16"
+          },
+          {
+            "name": "expedition_boost_hours_per_hour",
+            "type": "u8"
+          },
+          {
+            "name": "expedition_boost_chance_bps",
+            "type": "u16"
+          },
+          {
+            "name": "expedition_barnacle_chance_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PauseSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "bool"
+          },
+          {
+            "name": "upgrades",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PendingMint",
+      "docs": [
+        "A paid mint awaiting its randomness. Seeds: [\"pending\", mint_index]."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_index",
+            "type": "u64"
+          },
+          {
+            "name": "randomness",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed_slot",
+            "type": "u64"
+          },
+          {
+            "name": "committed_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Pool",
+      "docs": [
+        "Reward accounting and fleet counters. Seeds: [\"pool\"]."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rewards",
+            "type": {
+              "defined": {
+                "name": "RewardState"
+              }
+            }
+          },
+          {
+            "name": "minted_count",
+            "docs": [
+              "Next mint index (also counts merge outputs). Asset PDAs are [\"asset\", index]."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "live_subs",
+            "type": "u32"
+          },
+          {
+            "name": "pending_mints",
+            "type": "u32"
+          },
+          {
+            "name": "active_harbors",
+            "docs": [
+              "Harbors with depth > 0."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "total_fees",
+            "type": "u64"
+          },
+          {
+            "name": "total_to_treasury",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PoolFunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "funder",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reinforced",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "level",
+            "type": "u8"
+          },
+          {
+            "name": "depth",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RewardState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "acc_per_depth",
+            "type": "u128"
+          },
+          {
+            "name": "total_depth",
+            "docs": [
+              "Sum of docked harbor depths plus boosts that have not reached their end boundary."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "stream_remaining",
+            "docs": [
+              "Lamports deposited but not yet credited to the accumulator."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "stream_end",
+            "type": "i64"
+          },
+          {
+            "name": "last_update",
+            "type": "i64"
+          },
+          {
+            "name": "total_deposited",
+            "type": "u64"
+          },
+          {
+            "name": "total_credited",
+            "docs": [
+              "Lamports reserved for harbors through the accumulator."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "total_claimed",
+            "type": "u64"
+          },
+          {
+            "name": "boost_amount",
+            "type": {
+              "array": [
+                "u64",
+                32
+              ]
+            }
+          },
+          {
+            "name": "boost_hour",
+            "type": {
+              "array": [
+                "i64",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Sub",
+      "docs": [
+        "Stats for one sub. Seeds: [\"sub\", asset]."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_index",
+            "type": "u64"
+          },
+          {
+            "name": "tier",
+            "type": "u8"
+          },
+          {
+            "name": "level",
+            "type": "u8"
+          },
+          {
+            "name": "base_depth",
+            "docs": [
+              "Tier depth at mint time (later config changes do not affect existing subs)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "depth",
+            "docs": [
+              "base_depth with reinforcement; what the sub contributes while docked."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "barnacles",
+            "type": "u16"
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": {
+                "name": "SubState"
+              }
+            }
+          },
+          {
+            "name": "harbor",
+            "docs": [
+              "Harbor while docked, away or returning; default when idle."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "away_until",
+            "type": "i64"
+          },
+          {
+            "name": "away_hours",
+            "type": "u8"
+          },
+          {
+            "name": "randomness",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed_slot",
+            "type": "u64"
+          },
+          {
+            "name": "committed_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SubMinted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_index",
+            "type": "u64"
+          },
+          {
+            "name": "tier",
+            "type": "u8"
+          },
+          {
+            "name": "depth",
+            "type": "u64"
+          },
+          {
+            "name": "fallback",
+            "docs": [
+              "True when randomness was never revealed and the fallback (lowest tier) applied."
+            ],
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SubState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Idle"
+          },
+          {
+            "name": "Docked"
+          },
+          {
+            "name": "Away"
+          },
+          {
+            "name": "Returning"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Undocked",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "depth",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "docs": [
+        "Holds pool lamports only. Seeds: [\"vault\"]. Only `claim` moves lamports out."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    }
+  ],
+  "constants": [
+    {
+      "name": "ASSET_SEED",
+      "type": "bytes",
+      "value": "[97, 115, 115, 101, 116]"
+    },
+    {
+      "name": "AUTHORITY_SEED",
+      "type": "bytes",
+      "value": "[97, 117, 116, 104, 111, 114, 105, 116, 121]"
+    },
+    {
+      "name": "CONFIG_SEED",
+      "type": "bytes",
+      "value": "[99, 111, 110, 102, 105, 103]"
+    },
+    {
+      "name": "HARBOR_SEED",
+      "type": "bytes",
+      "value": "[104, 97, 114, 98, 111, 114]"
+    },
+    {
+      "name": "PENDING_SEED",
+      "type": "bytes",
+      "value": "[112, 101, 110, 100, 105, 110, 103]"
+    },
+    {
+      "name": "POOL_SEED",
+      "type": "bytes",
+      "value": "[112, 111, 111, 108]"
+    },
+    {
+      "name": "SUB_SEED",
+      "type": "bytes",
+      "value": "[115, 117, 98]"
+    },
+    {
+      "name": "VAULT_SEED",
+      "type": "bytes",
+      "value": "[118, 97, 117, 108, 116]"
+    }
+  ]
+}

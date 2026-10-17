@@ -1,0 +1,27 @@
+{
+  "name": "@abyss-haul/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "sync-idl": "node scripts/sync-idl.mjs",
+    "devnet:init": "tsx scripts/devnet-init.ts",
+    "devnet:e2e": "tsx scripts/devnet-e2e.ts"
+  },
+  "dependencies": {
+    "@anchor-lang/core": "^1.2.1",
+    "@solana/web3.js": "^1.99.0",
+    "@switchboard-xyz/on-demand": "^3.10.6",
+    "bn.js": "^5.2.5"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.2.0",
+    "@types/node": "^24.19.2",
+    "litesvm": "^1.6.0",
+    "tsx": "^4.23.15",
+    "typescript": "5.9"
+  }
+}
