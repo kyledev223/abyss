@@ -1,9 +1,15 @@
 import Link from "next/link";
+import { IS_PLAY_MONEY } from "@/lib/config";
 
 /** Risk disclaimer, in our own words. Shown on every page. */
 export function SiteFooter() {
   return (
     <footer className="mt-24 border-t border-kelp/60">
+      {IS_PLAY_MONEY && (
+        <p className="bg-trench px-4 py-2 text-center text-sm text-silt">
+          You are on devnet. Every SOL here is play money with no value.
+        </p>
+      )}
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 md:grid-cols-[2fr_1fr]">
         <section aria-labelledby="risk-heading" className="max-w-prose">
           <h2 id="risk-heading" className="text-2xl text-lantern">

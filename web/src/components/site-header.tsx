@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IS_PLAY_MONEY } from "@/lib/config";
 
 // The wallet button reads window; render it on the client only.
 const WalletMultiButton = dynamic(
@@ -24,11 +23,6 @@ export function SiteHeader() {
   const path = usePathname();
   return (
     <header className="border-b border-kelp/60">
-      {IS_PLAY_MONEY && (
-        <p className="bg-trench px-4 py-1.5 text-center text-sm text-silt">
-          You are on devnet. Every SOL here is play money with no value.
-        </p>
-      )}
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-4">
         <Link href="/" className="font-stencil text-2xl font-extrabold tracking-wide text-foam no-underline">
           Abyss Haul
