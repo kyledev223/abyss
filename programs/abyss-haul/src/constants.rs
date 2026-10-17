@@ -20,10 +20,7 @@ pub const PENDING_SEED: &[u8] = b"pending";
 
 pub const MPL_CORE_ID: Pubkey = pubkey!("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d");
 
-#[cfg(not(feature = "devnet"))]
-pub const SWITCHBOARD_ID: Pubkey = pubkey!("SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv");
-#[cfg(feature = "devnet")]
-pub const SWITCHBOARD_ID: Pubkey = pubkey!("Aio4gaXjXzJNVLtzwtNVmSqGKpANtXhybbkhtAC94ji2");
+pub use crate::external::orao::ORAO_VRF_ID;
 
 pub const TIERS: usize = 6;
 /// Tiers that can be merged (all but the top). A named constant because `InitSpace` cannot

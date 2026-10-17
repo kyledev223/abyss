@@ -1,10 +1,11 @@
 /**
- * Client builders against the real program + Metaplex Core in LiteSVM (Node). Switchboard
- * randomness accounts are written directly (the program only reads them). The key check: the
- * TypeScript reward preview (src/math.ts) equals what an on-chain claim actually pays.
+ * Client builders against the real program, Metaplex Core and ORAO VRF in LiteSVM (Node).
+ * Randomness requests are real CPIs into ORAO; `fulfill` plays ORAO's off-chain authorities.
+ * The key check: the TypeScript reward preview (src/math.ts) equals what a claim actually pays.
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { address, getTransactionDecoder, lamports, type Address } from '@solana/kit';
 import { Connection, Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js';
@@ -14,11 +15,16 @@ import {
   CHECKPOINTS_SPACE,
   Checkpoints,
   MPL_CORE_ID,
+  ORAO_VRF_ID,
   PROGRAM_ID,
-  SWITCHBOARD_PROGRAM,
   claimableAt,
   compileTx,
   launchParams,
+  mintSeed,
+  oraoNetworkState,
+  oraoRequest,
+  parseNetworkState,
+  randomNonce,
   reinforceCost,
   toHarborRewards,
   toRewardState,
@@ -28,7 +34,7 @@ const SOL = 1_000_000_000n;
 const HOUR = 3_600n;
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 const addr = (k: PublicKey): Address => address(k.toBase58());
-const RANDOMNESS_DISC = [10, 66, 229, 135, 220, 239, 217, 114];
+const NETWORK_STATE = readFileSync(here('../../programs/abyss-haul/tests/fixtures/orao_network_state.bin'));
 
 class Sim {
   svm = new LiteSVM();
@@ -39,6 +45,16 @@ class Sim {
   constructor() {
     this.svm.addProgramFromFile(addr(PROGRAM_ID), here('../../target/deploy/abyss_haul.so'));
     this.svm.addProgramFromFile(addr(MPL_CORE_ID), here('../../programs/abyss-haul/tests/fixtures/mpl_core.so'));
+    this.svm.addProgramFromFile(addr(ORAO_VRF_ID), here('../../programs/abyss-haul/tests/fixtures/orao_vrf.so'));
+    this.svm.setAccount({
+      address: addr(oraoNetworkState()),
+      data: new Uint8Array(NETWORK_STATE),
+      executable: false,
+      lamports: lamports(this.svm.minimumBalanceForRentExemption(BigInt(NETWORK_STATE.length))),
+      programAddress: addr(ORAO_VRF_ID),
+      space: BigInt(NETWORK_STATE.length),
+    });
+    this.airdrop(parseNetworkState(NETWORK_STATE).treasury, 1n);
     const clock = this.svm.getClock();
     clock.unixTimestamp = 1_760_000_000n;
     this.svm.setClock(clock);
@@ -88,31 +104,14 @@ class Sim {
     if (res instanceof FailedTransactionMetadata) throw new Error(res.meta().logs().join('\n'));
   }
 
-  writeRandomness(k: PublicKey, seedSlot: bigint, revealSlot: bigint, roll: bigint) {
-    const data = new Uint8Array(8 + 32 * 3 + 8 + 32 + 8 + 32 + 96 + 128);
-    const view = new DataView(data.buffer);
-    data.set(RANDOMNESS_DISC, 0);
-    view.setBigUint64(8 + 96, seedSlot, true);
-    view.setBigUint64(8 + 136, revealSlot, true);
-    view.setBigUint64(8 + 144, roll, true);
-    this.svm.setAccount({
-      address: addr(k),
-      data,
-      executable: false,
-      lamports: lamports(this.svm.minimumBalanceForRentExemption(BigInt(data.length))),
-      programAddress: addr(SWITCHBOARD_PROGRAM.localnet),
-      space: BigInt(data.length),
-    });
-  }
-  freshRandomness() {
-    const k = Keypair.generate().publicKey;
-    this.writeRandomness(k, this.slot() - 1n, 0n, 0n);
-    return k;
-  }
-  reveal(k: PublicKey, roll: bigint) {
-    this.warp(1n);
-    const seed = new DataView(this.raw(k)!.data.buffer).getBigUint64(8 + 96, true);
-    this.writeRandomness(k, seed, this.slot(), roll);
+  /** What ORAO's authorities do: mark the request fulfilled; the first 8 bytes carry `roll`. */
+  fulfill(request: PublicKey, roll: bigint) {
+    const acc = this.raw(request)!;
+    const data = new Uint8Array(acc.data);
+    data[8] = 1; // RequestAccount::Fulfilled; client and seed stay at 9..73
+    data.fill(0, 73);
+    new DataView(data.buffer).setBigUint64(73, roll, true);
+    this.svm.setAccount({ ...acc, data });
   }
 
   async initialize() {
@@ -130,15 +129,21 @@ class Sim {
       checkpointsRent: Number(this.svm.minimumBalanceForRentExemption(BigInt(CHECKPOINTS_SPACE))),
     });
     this.send(ixs, this.deployer, [checkpoints, collection]);
-    this.client.addresses = { treasury: this.treasury, collection: collection.publicKey, checkpoints: checkpoints.publicKey };
+    this.client.addresses = {
+      treasury: this.treasury,
+      collection: collection.publicKey,
+      checkpoints: checkpoints.publicKey,
+      vrfTreasury: parseNetworkState(NETWORK_STATE).treasury,
+    };
   }
 
   async mint(p: Keypair, roll: bigint): Promise<PublicKey> {
     const index = BigInt(this.decode<{ mintedCount: { toString(): string } }>('pool', this.client.pda.pool()).mintedCount.toString());
-    const r = this.freshRandomness();
-    this.send([await this.client.mintCommitIx(p.publicKey, r, index)], p);
-    this.reveal(r, roll);
-    this.send([await this.client.mintRevealIx(p.publicKey, index, p.publicKey, r)], p);
+    const nonce = randomNonce();
+    const request = oraoRequest(mintSeed(index, p.publicKey, Uint8Array.from(nonce)));
+    this.send([await this.client.mintCommitIx(p.publicKey, nonce, index)], p);
+    this.fulfill(request, roll);
+    this.send([await this.client.mintRevealIx(p.publicKey, index, p.publicKey, request)], p);
     return this.client.pda.asset(index);
   }
 
@@ -194,10 +199,12 @@ test('preview stays exact across an expedition boost and its hour-boundary expir
 
   s.send([await s.client.expeditionStartIx(alice.publicKey, a, 2)], alice);
   s.warp(2n * HOUR);
-  const r = s.freshRandomness();
-  s.send([await s.client.expeditionReturnCommitIx(alice.publicKey, a, r)], alice);
-  s.reveal(r, 100n); // boost: +100% for 4 h, snapped up to the hour
-  s.send([await s.client.expeditionReturnRevealIx(bob.publicKey, a, alice.publicKey, r)], bob);
+  const awayUntil = BigInt(s.decode<{ awayUntil: { toString(): string } }>('sub', s.client.pda.sub(a)).awayUntil.toString());
+  const nonce = randomNonce();
+  s.send([await s.client.expeditionReturnCommitIx(alice.publicKey, a, nonce, awayUntil)], alice);
+  const request = s.decode<{ randomness: PublicKey }>('sub', s.client.pda.sub(a)).randomness;
+  s.fulfill(request, 100n); // boost: +100% for 4 h, snapped up to the hour
+  s.send([await s.client.expeditionReturnRevealIx(bob.publicKey, a, alice.publicKey, request)], bob);
   const harbor = s.decode<{ rewards: { boostExtra: { toNumber(): number } } }>('harbor', s.client.pda.harbor(alice.publicKey));
   assert.equal(harbor.rewards.boostExtra.toNumber(), 100);
 

@@ -4,7 +4,7 @@ use crate::constants::*;
 use crate::economics::{expedition_find, Find};
 use crate::error::ErrorCode;
 use crate::events::*;
-use crate::external::switchboard;
+use crate::external::orao;
 use crate::ops;
 use crate::state::*;
 
@@ -63,19 +63,31 @@ pub fn handle_expedition_start(mut ctx: Context<ExpeditionStart>, hours: u8) -> 
     Ok(())
 }
 
-/// Commits to randomness for the return roll once the sub is due back. Never paused.
+/// Requests ORAO randomness for the return roll once the sub is due back. Never paused.
 #[derive(Accounts)]
 pub struct ExpeditionReturnCommit<'info> {
+    #[account(mut)]
     pub owner: Signer<'info>,
     #[account(seeds = [HARBOR_SEED, owner.key().as_ref()], bump = harbor.bump)]
     pub harbor: Box<Account<'info, Harbor>>,
     #[account(mut, seeds = [SUB_SEED, sub.asset.as_ref()], bump = sub.bump)]
     pub sub: Box<Account<'info, Sub>>,
-    /// CHECK: Switchboard randomness account; owner, discriminator and freshness checked.
-    pub randomness: UncheckedAccount<'info>,
+    /// CHECK: ORAO network state (seed-checked under the ORAO program).
+    #[account(mut, seeds = [orao::NETWORK_STATE_SEED], bump, seeds::program = ORAO_VRF_ID)]
+    pub vrf_network_state: UncheckedAccount<'info>,
+    /// CHECK: ORAO treasury; ORAO checks it against its network state.
+    #[account(mut)]
+    pub vrf_treasury: UncheckedAccount<'info>,
+    /// CHECK: ORAO request account, created by ORAO at PDA(["orao-vrf-randomness-request", seed]).
+    #[account(mut)]
+    pub vrf_request: UncheckedAccount<'info>,
+    /// CHECK: address-checked program.
+    #[account(address = ORAO_VRF_ID)]
+    pub vrf_program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
 }
 
-pub fn handle_expedition_return_commit(mut ctx: Context<ExpeditionReturnCommit>) -> Result<()> {
+pub fn handle_expedition_return_commit(mut ctx: Context<ExpeditionReturnCommit>, nonce: [u8; 32]) -> Result<()> {
     let a = &mut ctx.accounts;
     require!(
         a.sub.state == SubState::Away && a.sub.harbor == a.harbor.key(),
@@ -83,8 +95,18 @@ pub fn handle_expedition_return_commit(mut ctx: Context<ExpeditionReturnCommit>)
     );
     let clock = Clock::get()?;
     require!(clock.unix_timestamp >= a.sub.away_until, ErrorCode::StillAway);
-    a.sub.seed_slot = switchboard::check_commit(&a.randomness, clock.slot)?;
-    a.sub.randomness = a.randomness.key();
+    let vrf_seed = orao::expedition_seed(&a.sub.key(), a.sub.away_until, &nonce);
+    orao::request(
+        &a.vrf_program,
+        &a.owner,
+        &a.vrf_network_state,
+        &a.vrf_treasury,
+        &a.vrf_request,
+        &a.system_program,
+        vrf_seed,
+    )?;
+    a.sub.vrf_seed = vrf_seed;
+    a.sub.randomness = a.vrf_request.key();
     a.sub.committed_at = clock.unix_timestamp;
     a.sub.state = SubState::Returning;
     Ok(())
@@ -108,14 +130,14 @@ pub struct ExpeditionReturnReveal<'info> {
     pub sub: Box<Account<'info, Sub>>,
     /// CHECK: address-checked against the commitment; parsed leniently.
     #[account(address = sub.randomness)]
-    pub randomness: UncheckedAccount<'info>,
+    pub vrf_request: UncheckedAccount<'info>,
 }
 
 pub fn handle_expedition_return_reveal(mut ctx: Context<ExpeditionReturnReveal>) -> Result<()> {
     let a = &mut ctx.accounts;
     require!(a.sub.state == SubState::Returning, ErrorCode::WrongSubState);
     let now = ops::now()?;
-    let (find, fallback) = match switchboard::revealed_value(&a.randomness, a.sub.seed_slot) {
+    let (find, fallback) = match orao::fulfilled_value(&a.vrf_request, &a.sub.vrf_seed) {
         Some(value) => (expedition_find(&value, &a.config.params, a.sub.depth, a.sub.away_hours)?, false),
         None => {
             require!(

@@ -23,9 +23,10 @@ fn every_instruction_fits_the_budget() {
     }
 
     measure!("open_harbor", h.open_harbor(&alice)).unwrap();
-    let r = h.fresh_randomness();
-    measure!("mint_commit", h.mint_commit(&alice, r)).unwrap();
-    h.reveal(r, value_for_roll(0, 0));
+    let nonce = random_nonce();
+    let request = h.mint_request(&alice.pubkey_for_test(), &nonce);
+    measure!("mint_commit (incl. ORAO request)", h.mint_commit(&alice, nonce)).unwrap();
+    h.fulfill(request, value_for_roll(0, 0));
     measure!("mint_reveal", h.mint_reveal(&alice, 0)).unwrap();
     let a = asset_pda(0);
     let b = h.mint(&alice, 0).unwrap();
@@ -40,9 +41,10 @@ fn every_instruction_fits_the_budget() {
     measure!("expand_harbor", h.expand(&alice)).unwrap();
     measure!("expedition_start", h.expedition_start(&alice, &a, 1)).unwrap();
     h.warp(HOUR);
-    let r = h.fresh_randomness();
-    measure!("expedition_return_commit", h.expedition_commit(&alice, &a, r)).unwrap();
-    h.reveal(r, value_for_roll(100, 0)); // boost
+    let nonce = random_nonce();
+    let request = h.expedition_request(&a, &nonce);
+    measure!("expedition_return_commit (incl. ORAO)", h.expedition_commit(&alice, &a, nonce)).unwrap();
+    h.fulfill(request, value_for_roll(100, 0)); // boost
     measure!("expedition_return_reveal", h.expedition_reveal(&alice, &a)).unwrap();
     measure!("undock", h.undock(&alice, &a)).unwrap();
     h.dock(&alice, &a).unwrap();

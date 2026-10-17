@@ -51,10 +51,6 @@ pub enum ErrorCode {
     RentDepositTooSmall,
 
     // Randomness and expeditions
-    #[msg("Not a valid Switchboard randomness account")]
-    InvalidRandomness,
-    #[msg("Randomness must be committed in the previous slot and unrevealed")]
-    RandomnessNotFresh,
     #[msg("Randomness not revealed yet")]
     RandomnessNotRevealed,
     #[msg("Expedition length must be 1 to 6 hours")]

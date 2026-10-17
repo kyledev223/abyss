@@ -11,7 +11,8 @@ and earn a share of a fee pool by Depth Rating.
 | Path | What |
 |---|---|
 | `programs/abyss-haul/` | Anchor program (rewards engine in `src/rewards.rs`, instructions in `src/instructions/`) |
-| `programs/abyss-haul/tests/` | Engine property tests, LiteSVM instruction tests, transaction-level solvency fuzz |
+| `programs/abyss-haul/tests/` | Engine property tests, LiteSVM instruction tests (real Metaplex Core + ORAO VRF binaries), transaction-level solvency fuzz |
+| `client/` | TypeScript client: instruction builders, exact reward preview, ORAO flows, devnet scripts |
 | `config/defaults.json` | Launch economics — single source for the program init, sim and frontend |
 | `sim/economics.mjs` | Economics simulation; writes `sim/cohort-outcomes.json` for the Docs page |
 | `docs/DESIGN.md` | Accounts, formulas, invariants, and every design decision |
@@ -27,4 +28,9 @@ PROPTEST_CASES=2000 cargo test --release -p abyss-haul --test solvency_program
 scripts/mutation-check.sh          # engine: planted bugs must be caught
 scripts/mutation-check-program.sh  # instructions: planted bugs must be caught
 node sim/economics.mjs
+(cd client && npm install && npm run sync-idl && npm test)
+scripts/deploy-devnet.sh           # needs ~5 devnet SOL; then: (cd client && npm run devnet:e2e)
 ```
+
+Randomness comes from [ORAO VRF](https://github.com/orao-network/solana-vrf). (Switchboard, the original
+choice, shut down in September 2026; see `docs/DESIGN.md` §7.)

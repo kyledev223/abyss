@@ -18,14 +18,14 @@ idl-build = ["anchor-lang/idl-build"]
 anchor-debug = []
 custom-heap = []
 custom-panic = []
-# Use Switchboard's devnet program ID (default is mainnet).
-devnet = []
 
 
 [dependencies]
 anchor-lang = { version = "1.2.1", features = ["event-cpi"] }
 # Required by #[zero_copy]; min_const_generics makes [Checkpoint; 720] Pod.
 bytemuck = { version = "1", features = ["derive", "min_const_generics"] }
+# sha256 syscall on-chain; the sha2 feature backs host builds and tests.
+solana-sha256-hasher = { version = "3.1.0", features = ["sha2"] }
 
 [dev-dependencies]
 litesvm = "0.18.0"

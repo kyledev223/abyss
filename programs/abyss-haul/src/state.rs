@@ -148,8 +148,9 @@ pub struct Sub {
     pub harbor: Pubkey,
     pub away_until: i64,
     pub away_hours: u8,
+    /// ORAO request account for the return roll.
     pub randomness: Pubkey,
-    pub seed_slot: u64,
+    pub vrf_seed: [u8; 32],
     pub committed_at: i64,
     pub bump: u8,
 }
@@ -160,8 +161,9 @@ pub struct Sub {
 pub struct PendingMint {
     pub payer: Pubkey,
     pub mint_index: u64,
+    /// ORAO request account.
     pub randomness: Pubkey,
-    pub seed_slot: u64,
+    pub vrf_seed: [u8; 32],
     pub committed_at: i64,
     pub bump: u8,
 }

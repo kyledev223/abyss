@@ -12,6 +12,7 @@ import { compileTx, estimatePriorityFee, writableKeys, type FeeOptions } from '.
 import idl from './idl/abyss_haul.json';
 import type { AbyssHaul } from './idl/abyss_haul';
 import { Checkpoints, toHarborRewards, toRewardState, claimableAt } from './math';
+import { ORAO_VRF_ID, expeditionSeed, fetchOraoNetwork, mintSeed, oraoNetworkState, oraoRequest } from './orao';
 import type { Params } from './params';
 import { Pdas } from './pdas';
 
@@ -22,6 +23,8 @@ export interface ProgramAddresses {
   treasury: PublicKey;
   collection: PublicKey;
   checkpoints: PublicKey;
+  /** ORAO's fee treasury, from its network state. */
+  vrfTreasury: PublicKey;
 }
 
 /**
@@ -44,9 +47,18 @@ export class AbyssClient {
   }
 
   async load(): Promise<ProgramAddresses> {
-    const c = await this.config();
-    this.addresses = { treasury: c.treasury, collection: c.collection, checkpoints: c.checkpoints };
+    const [c, orao] = await Promise.all([this.config(), fetchOraoNetwork(this.connection)]);
+    this.addresses = { treasury: c.treasury, collection: c.collection, checkpoints: c.checkpoints, vrfTreasury: orao.treasury };
     return this.addresses;
+  }
+
+  private vrfAccounts(seed: Uint8Array) {
+    return {
+      vrfNetworkState: oraoNetworkState(),
+      vrfTreasury: this.a.vrfTreasury,
+      vrfRequest: oraoRequest(seed),
+      vrfProgram: ORAO_VRF_ID,
+    };
   }
 
   private get a(): ProgramAddresses {
@@ -166,22 +178,24 @@ export class AbyssClient {
 
   // ------------------------------------------------------------------ minting
 
-  mintCommitIx = (payer: PublicKey, randomness: PublicKey, mintIndex: bigint | number) =>
+  /** `nonce`: 32 random bytes (see `randomNonce`); `mintIndex`: `pool.mintedCount` at send time. */
+  mintCommitIx = (payer: PublicKey, nonce: number[], mintIndex: bigint) =>
     this.program.methods
-      .mintCommit()
+      .mintCommit(nonce)
       .accountsStrict({
         payer,
         ...this.common(),
         vault: this.pda.vault(),
         treasury: this.a.treasury,
         checkpoints: this.a.checkpoints,
-        randomness,
+        ...this.vrfAccounts(mintSeed(mintIndex, payer, Uint8Array.from(nonce))),
         pending: this.pda.pending(mintIndex),
         systemProgram: SystemProgram.programId,
       })
       .instruction();
 
-  mintRevealIx = (cranker: PublicKey, mintIndex: bigint | number, minter: PublicKey, randomness: PublicKey) => {
+  /** `request`: the pending mint's `randomness` (its ORAO request account). */
+  mintRevealIx = (cranker: PublicKey, mintIndex: bigint | number, minter: PublicKey, request: PublicKey) => {
     const asset = this.pda.asset(mintIndex);
     return this.program.methods
       .mintReveal()
@@ -190,7 +204,7 @@ export class AbyssClient {
         payer: minter,
         ...this.common(),
         pending: this.pda.pending(mintIndex),
-        randomness,
+        vrfRequest: request,
         asset,
         sub: this.pda.sub(asset),
         collection: this.a.collection,
@@ -293,13 +307,21 @@ export class AbyssClient {
       })
       .instruction();
 
-  expeditionReturnCommitIx = (owner: PublicKey, asset: PublicKey, randomness: PublicKey) =>
+  /** `awayUntil`: the sub's `awayUntil` (part of the ORAO seed). */
+  expeditionReturnCommitIx = (owner: PublicKey, asset: PublicKey, nonce: number[], awayUntil: bigint) =>
     this.program.methods
-      .expeditionReturnCommit()
-      .accountsStrict({ owner, harbor: this.pda.harbor(owner), sub: this.pda.sub(asset), randomness })
+      .expeditionReturnCommit(nonce)
+      .accountsStrict({
+        owner,
+        harbor: this.pda.harbor(owner),
+        sub: this.pda.sub(asset),
+        ...this.vrfAccounts(expeditionSeed(this.pda.sub(asset), awayUntil, Uint8Array.from(nonce))),
+        systemProgram: SystemProgram.programId,
+      })
       .instruction();
 
-  expeditionReturnRevealIx = (cranker: PublicKey, asset: PublicKey, owner: PublicKey, randomness: PublicKey) =>
+  /** `request`: the sub's `randomness` (its ORAO request account). */
+  expeditionReturnRevealIx = (cranker: PublicKey, asset: PublicKey, owner: PublicKey, request: PublicKey) =>
     this.program.methods
       .expeditionReturnReveal()
       .accountsStrict({
@@ -308,7 +330,7 @@ export class AbyssClient {
         checkpoints: this.a.checkpoints,
         harbor: this.pda.harbor(owner),
         sub: this.pda.sub(asset),
-        randomness,
+        vrfRequest: request,
       })
       .instruction();
 

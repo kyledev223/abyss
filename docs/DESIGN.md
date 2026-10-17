@@ -190,22 +190,34 @@ precede transfers. Every instruction emits an Anchor event via `emit_cpi!`.
 
 ## 7. Randomness
 
-Switchboard On-Demand randomness, commit/reveal. Slot hashes are never used.
+**ORAO VRF** (`VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y`, same ID on mainnet and devnet). Slot hashes are
+never used.
 
-- **Commit**: the randomness account must be owned by Switchboard, committed in the previous slot and
-  unrevealed. The fee is taken in the same instruction, before the value exists.
-- **Reveal**: the account must still carry the committed `seed_slot` and be revealed after it. The stored value
-  is read directly; we do not require same-slot consumption, so a reveal sent without our instruction cannot
-  strand a paid mint.
-- **No re-rolls**: re-committing the randomness account changes its `seed_slot`, so the value no longer counts.
-- **Timeout fallback**: with no valid reveal `REVEAL_TIMEOUT` (1 h) after commit, anyone may settle with the
-  **worst outcome** (Rust Bucket / no find). A stalled oracle or a closed randomness account can't strand a
-  paid mint or a sub at sea, and withholding a reveal never helps the player.
-- Mainnet program `SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv`; build with `--features devnet` for
-  `Aio4gaXjXzJNVLtzwtNVmSqGKpANtXhybbkhtAC94ji2`.
-- The Core and Switchboard crates target older Solana/Anchor versions, so `src/external/` encodes the few
-  instructions and layouts we use directly (from mpl-core 0.12.1 and switchboard-on-demand 0.13.0); the Core
-  side is tested against the mainnet Core binary in LiteSVM.
+> **Changed 2026-10-16.** The original design used Switchboard On-Demand. Switchboard deprecated all its oracle
+> products on 2026-09-19 and ended support on 2026-09-25; its gateway hostnames no longer resolve. ORAO's model
+> (request in our commit, read the fulfilled account in our reveal) maps onto the same commit/reveal split, so
+> every property below carried over unchanged.
+
+- **Commit** (`mint_commit(nonce)`, `expedition_return_commit(nonce)`): our instruction CPIs ORAO
+  `request_v2(seed)` and takes our fee in the same instruction, before the value exists. ORAO creates the
+  request account at `PDA(["orao-vrf-randomness-request", seed])` and its fulfilment authorities fill it in
+  within seconds; nobody needs to call anything.
+  - Mint seed = `sha256("abyss-haul:mint" ‖ mint_index LE ‖ payer ‖ nonce)`; expedition seed =
+    `sha256("abyss-haul:expedition" ‖ sub ‖ away_until LE ‖ nonce)`.
+  - The client `nonce` (32 random bytes) means nobody can pre-create the request account for an upcoming commit
+    (which would make it fail). A seed can only be requested once, so a seed whose value is already known can't
+    be reused.
+- **Reveal**: reads the request account; it must be owned by ORAO, carry the `RandomnessV2` discriminator, be
+  `Fulfilled`, and have our stored seed. The first 32 of the 64 randomness bytes are used.
+- **Timeout fallback**: with no valid fulfilment `REVEAL_TIMEOUT` (1 h) after commit, anyone may settle with the
+  **worst outcome** (Rust Bucket / no find). An ORAO outage or a forged account can't strand a paid mint or a
+  sub at sea, and withholding a reveal never helps the player.
+- **Cost to the player per request** (mainnet network state, 2026-10-16): ORAO fee 0.0005 SOL plus ~0.006 SOL
+  rent for the 749-byte request account, which ORAO does not refund. About 0.0065 SOL per mint and per
+  expedition return (~2.6% on a 0.25 SOL mint). Shown in the UI before signing.
+- The Core and ORAO crates target older Solana/Anchor versions, so `src/external/` encodes the few
+  instructions and layouts we use directly (mpl-core 0.12.1, orao-solana-vrf 0.7.0). Both are tested against
+  their mainnet binaries in LiteSVM (`tests/fixtures/`); only ORAO's off-chain fulfilment is simulated.
 
 ## 8. NFTs and art
 
@@ -281,7 +293,9 @@ payback_days       = cost / (depth_gain × rate_per_depth_day)
 **Harness: LiteSVM, not Bankrun.** `solana-bankrun` has not been published since Oct 2024 and does not
 support the current runtime; LiteSVM is the maintained in-process successor and Anchor 1.x's default test
 template. Same model (in-process VM, warpable clock), much faster than `solana-test-validator`. Metaplex
-Core and Switchboard On-Demand are loaded into LiteSVM from `solana program dump` of their mainnet binaries.
+Core and ORAO VRF (plus ORAO's network state account) are loaded into LiteSVM from `solana program dump` /
+`solana account` of mainnet; randomness requests are real CPIs, and only ORAO's off-chain fulfilment is
+simulated.
 
 Layers, in priority order:
 1. **Reward engine property tests** (`programs/abyss-haul/tests/solvency_engine.rs`, proptest). The §4–§5
@@ -299,7 +313,8 @@ Layers, in priority order:
    (`vault.lamports − rent_min`); signer/owner/PDA checks per instruction; pause matrix; admin cannot touch
    the vault; commit/reveal cannot be aborted.
 4. **Overflow/rounding**: extreme depths and deposits (u64 max-ish), dust accounting.
-5. **Devnet end-to-end** with real Switchboard randomness and Core before any mainnet deploy.
+5. **Devnet end-to-end** with real ORAO fulfilment and Core before any mainnet deploy
+   (`scripts/deploy-devnet.sh`, then `client: npm run devnet:e2e`).
 
 ## 14. Deployment
 

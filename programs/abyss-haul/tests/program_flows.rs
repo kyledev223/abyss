@@ -130,23 +130,33 @@ fn tier_follows_the_roll() {
 }
 
 #[test]
-fn commit_requires_fresh_switchboard_randomness() {
+fn commit_creates_a_real_orao_request() {
     let mut h = H::new();
     let alice = h.player(10);
-    let slot = h.slot();
+    let nonce = random_nonce();
+    let request = h.mint_request(&alice.pubkey(), &nonce);
+    let orao_treasury_before = h.lamports(&vrf_treasury());
+    h.mint_commit(&alice, nonce).unwrap();
+    let acc = h.svm.get_account(&request).unwrap();
+    assert_eq!(acc.owner, abyss_haul::ORAO_VRF_ID);
+    assert_eq!(acc.data[8], 0, "pending until ORAO's authorities fulfil it");
+    assert_eq!(h.lamports(&vrf_treasury()) - orao_treasury_before, ORAO_FEE);
+    let pending: PendingMint = h.fetch(&pending_pda(0)).unwrap();
+    assert_eq!(pending.randomness, request);
+}
 
-    let stale = anchor_lang::prelude::Pubkey::new_unique();
-    h.write_randomness(stale, slot - 2, 0, [0; 32]);
-    assert_err(h.mint_commit(&alice, stale), "RandomnessNotFresh");
-
-    let revealed = anchor_lang::prelude::Pubkey::new_unique();
-    let slot = h.slot();
-    h.write_randomness(revealed, slot - 1, slot, value_for_roll(ABYSSAL, 0));
-    assert_err(h.mint_commit(&alice, revealed), "RandomnessNotFresh");
-
-    // Not owned by Switchboard: a player cannot forge their own "randomness".
-    let forged = h.player(1).pubkey();
-    assert_err(h.mint_commit(&alice, forged), "InvalidRandomness");
+#[test]
+fn a_pre_requested_seed_cannot_block_or_steer_a_mint() {
+    let mut h = H::new();
+    let alice = h.player(10);
+    let mallory = h.player(10);
+    // Mallory requests (and could have seen fulfilled) the seed Alice is about to use.
+    let nonce = random_nonce();
+    let seed = abyss_haul::external::orao::mint_seed(0, &alice.pubkey(), &nonce);
+    h.orao_request(&mallory, seed).unwrap();
+    assert!(h.mint_commit(&alice, nonce).is_err(), "a seed can only be requested once");
+    // But she can't predict Alice's real nonce, so a fresh one goes straight through.
+    h.mint_commit(&alice, random_nonce()).unwrap();
 }
 
 #[test]
@@ -156,28 +166,29 @@ fn reveal_is_permissionless_and_reimburses_the_caller() {
     let bob = h.player(10);
     let (alice_before, bob_before) = (h.lamports(&alice.pubkey()), h.lamports(&bob.pubkey()));
 
-    let r = h.fresh_randomness();
-    h.mint_commit(&alice, r).unwrap();
-    h.reveal(r, value_for_roll(REEF_RUNNER, 0));
+    let nonce = random_nonce();
+    let request = h.mint_request(&alice.pubkey(), &nonce);
+    h.mint_commit(&alice, nonce).unwrap();
+    h.fulfill(request, value_for_roll(REEF_RUNNER, 0));
     h.mint_reveal(&bob, 0).unwrap();
 
     let asset = asset_pda(0);
     assert_eq!(h.core_owner(&asset), Some(alice.pubkey()), "asset goes to the minter, not the caller");
+    assert_eq!(h.sub(&asset).tier, 1);
     assert_eq!(h.lamports(&bob.pubkey()), bob_before - TX_FEE, "caller is reimbursed exactly");
     let rent = h.lamports(&asset) + h.lamports(&sub_pda(&asset));
     assert_eq!(
         alice_before - h.lamports(&alice.pubkey()),
-        launch_params().mint_price + rent + TX_FEE,
-        "minter pays price + rent; the rest of the deposit is refunded"
+        launch_params().mint_price + rent + h.lamports(&request) + ORAO_FEE + TX_FEE,
+        "minter pays price + rent + ORAO fee and request rent; the rest of the deposit is refunded"
     );
 }
 
 #[test]
-fn unrevealed_mint_falls_back_to_the_lowest_tier_after_the_timeout() {
+fn unfulfilled_mint_falls_back_to_the_lowest_tier_after_the_timeout() {
     let mut h = H::new();
     let alice = h.player(10);
-    let r = h.fresh_randomness();
-    h.mint_commit(&alice, r).unwrap();
+    h.mint_commit(&alice, random_nonce()).unwrap();
     assert_err(h.mint_reveal(&alice, 0), "RandomnessNotRevealed");
     h.warp(REVEAL_TIMEOUT);
     h.mint_reveal(&alice, 0).unwrap();
@@ -185,20 +196,56 @@ fn unrevealed_mint_falls_back_to_the_lowest_tier_after_the_timeout() {
 }
 
 #[test]
-fn recommitting_the_randomness_cannot_reroll_a_mint() {
+fn a_forged_fulfilment_is_ignored() {
     let mut h = H::new();
     let alice = h.player(10);
-    let r = h.fresh_randomness();
-    h.mint_commit(&alice, r).unwrap();
-    // Alice dislikes the outcome she sees coming, re-commits her randomness account and gets a
-    // great value revealed on the new seed.
-    h.warp(5);
-    let slot = h.slot();
-    h.write_randomness(r, slot - 1, slot, value_for_roll(ABYSSAL, 0));
+    let nonce = random_nonce();
+    let request = h.mint_request(&alice.pubkey(), &nonce);
+    h.mint_commit(&alice, nonce).unwrap();
+    // The request account claims to be fulfilled with a great roll, but for a different seed.
+    h.write_fulfilled(request, [7; 32], value_for_roll(ABYSSAL, 0));
     assert_err(h.mint_reveal(&alice, 0), "RandomnessNotRevealed");
     h.warp(REVEAL_TIMEOUT);
     h.mint_reveal(&alice, 0).unwrap();
     assert_eq!(h.sub(&asset_pda(0)).tier, 0, "tampering only ever leads to the worst outcome");
+}
+
+#[test]
+fn commit_rejects_a_fake_orao_network_state() {
+    let mut h = H::new();
+    let alice = h.player(10);
+    let nonce = random_nonce();
+    let index = h.pool().minted_count;
+    let fake = h.player(1).pubkey();
+    let mut ix_accounts = abyss_haul::accounts::MintCommit {
+        payer: alice.pubkey(),
+        config: config_pda(),
+        pool: pool_pda(),
+        vault: vault_pda(),
+        treasury: h.treasury,
+        checkpoints: h.checkpoints,
+        vrf_network_state: fake,
+        vrf_treasury: vrf_treasury(),
+        vrf_request: h.mint_request(&alice.pubkey(), &nonce),
+        vrf_program: abyss_haul::ORAO_VRF_ID,
+        pending: pending_pda(index),
+        system_program: anchor_lang::system_program::ID,
+        event_authority: event_authority(),
+        program: abyss_haul::ID,
+    };
+    let send = |h: &mut H, accounts: &abyss_haul::accounts::MintCommit| {
+        use anchor_lang::{InstructionData, ToAccountMetas};
+        let ix = anchor_lang::solana_program::instruction::Instruction::new_with_bytes(
+            abyss_haul::ID,
+            &abyss_haul::instruction::MintCommit { nonce }.data(),
+            accounts.to_account_metas(None),
+        );
+        h.send(&[ix], &[&alice])
+    };
+    assert_err(send(&mut h, &ix_accounts), "ConstraintSeeds");
+    ix_accounts.vrf_network_state = vrf_network_state();
+    ix_accounts.vrf_program = fake;
+    assert_err(send(&mut h, &ix_accounts), "ConstraintAddress");
 }
 
 #[test]
@@ -208,11 +255,11 @@ fn live_supply_cap_counts_pending_mints_and_merges_free_room() {
     let mut h = H::with_params(p);
     let alice = h.player(20);
     let a = h.mint(&alice, RUST_BUCKET).unwrap();
-    let r = h.fresh_randomness();
-    h.mint_commit(&alice, r).unwrap(); // pending counts toward the cap
-    let r2 = h.fresh_randomness();
-    assert_err(h.mint_commit(&alice, r2), "SupplyCapReached");
-    h.reveal(r, value_for_roll(RUST_BUCKET, 0));
+    let nonce = random_nonce();
+    let request = h.mint_request(&alice.pubkey(), &nonce);
+    h.mint_commit(&alice, nonce).unwrap(); // pending counts toward the cap
+    assert_err(h.mint_commit(&alice, random_nonce()), "SupplyCapReached");
+    h.fulfill(request, value_for_roll(RUST_BUCKET, 0));
     h.mint_reveal(&alice, 1).unwrap();
     h.open_harbor(&alice).unwrap();
     h.merge(&alice, &a, &asset_pda(1)).unwrap();
@@ -378,8 +425,7 @@ fn pause_stops_growth_but_never_claims_undock_or_returns() {
     let admin = h.admin.insecure_clone();
     h.set_pause(&admin, true, true).unwrap();
 
-    let r = h.fresh_randomness();
-    assert_err(h.mint_commit(&alice, r), "MintPaused");
+    assert_err(h.mint_commit(&alice, random_nonce()), "MintPaused");
     assert_err(h.dock(&alice, &idle), "UpgradesPaused");
     assert_err(h.reinforce(&alice, &assets[0]), "UpgradesPaused");
     assert_err(h.expand(&alice), "UpgradesPaused");
@@ -405,8 +451,7 @@ fn expedition_cycle_with_a_boost() {
     assert_eq!(h.sub(&a).state, SubState::Away);
     assert_err(h.undock(&alice, &a), "WrongSubState");
 
-    let r = h.fresh_randomness();
-    assert_err(h.expedition_commit(&alice, &a, r), "StillAway");
+    assert_err(h.expedition_commit(&alice, &a, random_nonce()), "StillAway");
     h.warp(3 * HOUR);
     h.expedition_return(&alice, &a, FIND_BOOST).unwrap();
 
@@ -451,12 +496,11 @@ fn expedition_barnacle_nothing_and_fallback() {
     h.expedition_return(&alice, &a, FIND_NOTHING).unwrap();
     assert_eq!(h.harbor(&alice.pubkey()).rewards.boost_extra, 0);
 
-    // Oracle never reveals: after the timeout anyone can bring the sub home with no find.
+    // Oracle never fulfils: after the timeout anyone can bring the sub home with no find.
     h.warp(24 * HOUR);
     h.expedition_start(&alice, &a, 1).unwrap();
     h.warp(HOUR);
-    let r = h.fresh_randomness();
-    h.expedition_commit(&alice, &a, r).unwrap();
+    h.expedition_commit(&alice, &a, random_nonce()).unwrap();
     let keeper = h.player(1);
     assert_err(h.expedition_reveal(&keeper, &a), "RandomnessNotRevealed");
     h.warp(REVEAL_TIMEOUT);

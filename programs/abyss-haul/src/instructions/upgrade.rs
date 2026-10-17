@@ -231,7 +231,7 @@ pub fn handle_merge(mut ctx: Context<Merge>) -> Result<()> {
         away_until: 0,
         away_hours: 0,
         randomness: Pubkey::default(),
-        seed_slot: 0,
+        vrf_seed: [0; 32],
         committed_at: 0,
         bump: ctx.bumps.new_sub,
     });

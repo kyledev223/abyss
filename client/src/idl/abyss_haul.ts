@@ -499,6 +499,7 @@ export type AbyssHaul = {
       "accounts": [
         {
           "name": "owner",
+          "writable": true,
           "signer": true
         },
         {
@@ -545,10 +546,113 @@ export type AbyssHaul = {
           }
         },
         {
-          "name": "randomness"
+          "name": "vrfNetworkState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  111,
+                  45,
+                  118,
+                  114,
+                  102,
+                  45,
+                  110,
+                  101,
+                  116,
+                  119,
+                  111,
+                  114,
+                  107,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  117,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                7,
+                71,
+                177,
+                26,
+                250,
+                145,
+                180,
+                209,
+                249,
+                34,
+                242,
+                123,
+                14,
+                186,
+                193,
+                218,
+                178,
+                59,
+                33,
+                41,
+                164,
+                190,
+                243,
+                79,
+                50,
+                164,
+                123,
+                88,
+                245,
+                206,
+                252,
+                120
+              ]
+            }
+          }
+        },
+        {
+          "name": "vrfTreasury",
+          "writable": true
+        },
+        {
+          "name": "vrfRequest",
+          "writable": true
+        },
+        {
+          "name": "vrfProgram",
+          "address": "VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "nonce",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "expeditionReturnReveal",
@@ -632,7 +736,7 @@ export type AbyssHaul = {
           }
         },
         {
-          "name": "randomness"
+          "name": "vrfRequest"
         },
         {
           "name": "eventAuthority"
@@ -1393,7 +1497,96 @@ export type AbyssHaul = {
           "writable": true
         },
         {
-          "name": "randomness"
+          "name": "vrfNetworkState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  111,
+                  45,
+                  118,
+                  114,
+                  102,
+                  45,
+                  110,
+                  101,
+                  116,
+                  119,
+                  111,
+                  114,
+                  107,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  117,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                7,
+                71,
+                177,
+                26,
+                250,
+                145,
+                180,
+                209,
+                249,
+                34,
+                242,
+                123,
+                14,
+                186,
+                193,
+                218,
+                178,
+                59,
+                33,
+                41,
+                164,
+                190,
+                243,
+                79,
+                50,
+                164,
+                123,
+                88,
+                245,
+                206,
+                252,
+                120
+              ]
+            }
+          }
+        },
+        {
+          "name": "vrfTreasury",
+          "writable": true
+        },
+        {
+          "name": "vrfRequest",
+          "writable": true
+        },
+        {
+          "name": "vrfProgram",
+          "address": "VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y"
         },
         {
           "name": "pending",
@@ -1431,7 +1624,17 @@ export type AbyssHaul = {
           "name": "program"
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "nonce",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "mintReveal",
@@ -1516,7 +1719,7 @@ export type AbyssHaul = {
           }
         },
         {
-          "name": "randomness"
+          "name": "vrfRequest"
         },
         {
           "name": "asset",
@@ -2593,36 +2796,26 @@ export type AbyssHaul = {
     },
     {
       "code": 6021,
-      "name": "invalidRandomness",
-      "msg": "Not a valid Switchboard randomness account"
-    },
-    {
-      "code": 6022,
-      "name": "randomnessNotFresh",
-      "msg": "Randomness must be committed in the previous slot and unrevealed"
-    },
-    {
-      "code": 6023,
       "name": "randomnessNotRevealed",
       "msg": "Randomness not revealed yet"
     },
     {
-      "code": 6024,
+      "code": 6022,
       "name": "invalidExpeditionHours",
       "msg": "Expedition length must be 1 to 6 hours"
     },
     {
-      "code": 6025,
+      "code": 6023,
       "name": "expeditionActive",
       "msg": "Harbor already has a sub on an expedition"
     },
     {
-      "code": 6026,
+      "code": 6024,
       "name": "expeditionCooldown",
       "msg": "Next expedition is not available yet"
     },
     {
-      "code": 6027,
+      "code": 6025,
       "name": "stillAway",
       "msg": "Sub has not returned yet"
     }
@@ -3242,11 +3435,19 @@ export type AbyssHaul = {
           },
           {
             "name": "randomness",
+            "docs": [
+              "ORAO request account."
+            ],
             "type": "pubkey"
           },
           {
-            "name": "seedSlot",
-            "type": "u64"
+            "name": "vrfSeed",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
           },
           {
             "name": "committedAt",
@@ -3482,11 +3683,19 @@ export type AbyssHaul = {
           },
           {
             "name": "randomness",
+            "docs": [
+              "ORAO request account for the return roll."
+            ],
             "type": "pubkey"
           },
           {
-            "name": "seedSlot",
-            "type": "u64"
+            "name": "vrfSeed",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
           },
           {
             "name": "committedAt",

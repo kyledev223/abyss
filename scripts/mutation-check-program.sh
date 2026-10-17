@@ -19,7 +19,8 @@ MUTANTS=(
   "undock leaves the boost running|instructions/harbor.rs|        if a.harbor.boost_sub == a.sub.key() {\n            a.pool.rewards.cancel_boost|        if false {\n            a.pool.rewards.cancel_boost"
   "mint ignores the pause|instructions/mint.rs|    require!(!a.config.paused_mint, ErrorCode::MintPaused);|"
   "reveal falls back without waiting|instructions/mint.rs|            require!(\n                now >= a.pending.committed_at.saturating_add(REVEAL_TIMEOUT),\n                ErrorCode::RandomnessNotRevealed\n            );|"
-  "reveal accepts re-committed randomness|external/switchboard.rs|(r.seed_slot == committed_seed_slot && r.reveal_slot > r.seed_slot)|(r.reveal_slot > r.seed_slot)"
+  "reveal ignores the request seed|external/orao.rs|        && &data[SEED..SEED + 32] == seed;|        ;"
+  "reveal accepts a pending request|external/orao.rs|        && data[TAG] == FULFILLED|"
   "merge keeps the burned subs' depth|instructions/upgrade.rs|            a.pool.rewards.remove_depth(&mut a.harbor.rewards, sub.depth, now, &mut *cps)?;|"
   "expedition keeps earning while away|instructions/expedition.rs|        a.pool.rewards.remove_depth(&mut a.harbor.rewards, a.sub.depth, now, &mut *cps)?;\n    }|    }"
 )

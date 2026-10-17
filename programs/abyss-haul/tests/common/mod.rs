@@ -1,9 +1,10 @@
-//! LiteSVM harness: our program plus the real Metaplex Core binary (dumped from mainnet), fake
-//! Switchboard randomness accounts (our program only reads them), and a controllable clock.
+//! LiteSVM harness: our program plus the real Metaplex Core and ORAO VRF binaries and ORAO's
+//! network state (dumped from mainnet), and a controllable clock. Randomness requests are real
+//! CPIs into ORAO; `fulfill` plays the part of ORAO's off-chain authorities.
 #![allow(dead_code)]
 
 use abyss_haul::constants::*;
-use abyss_haul::external::switchboard::{RANDOMNESS_ACCOUNT_LEN, RANDOMNESS_DISCRIMINATOR};
+use abyss_haul::external::orao::{self, NETWORK_STATE_SEED, ORAO_VRF_ID, RANDOMNESS_V2_DISCRIMINATOR, REQUEST_SEED};
 use abyss_haul::rewards::RewardState;
 use abyss_haul::state::*;
 use anchor_lang::prelude::{Clock, Pubkey};
@@ -23,6 +24,10 @@ pub const T0: i64 = 1_760_000_000;
 pub const HOUR: i64 = 3_600;
 const PROGRAM_SO: &[u8] = include_bytes!(concat!(env!("CARGO_TARGET_TMPDIR"), "/../deploy/abyss_haul.so"));
 const CORE_SO: &[u8] = include_bytes!("../fixtures/mpl_core.so");
+const ORAO_SO: &[u8] = include_bytes!("../fixtures/orao_vrf.so");
+const ORAO_NETWORK_STATE: &[u8] = include_bytes!("../fixtures/orao_network_state.bin");
+/// ORAO request fee from the mainnet network state fixture.
+pub const ORAO_FEE: u64 = 500_000;
 
 pub type TxResult = Result<(), String>;
 
@@ -38,6 +43,19 @@ pub fn harbor_pda(owner: &Pubkey) -> Pubkey { pda(&[HARBOR_SEED, owner.as_ref()]
 pub fn sub_pda(asset: &Pubkey) -> Pubkey { pda(&[SUB_SEED, asset.as_ref()]) }
 pub fn asset_pda(index: u64) -> Pubkey { pda(&[ASSET_SEED, &index.to_le_bytes()]) }
 pub fn pending_pda(index: u64) -> Pubkey { pda(&[PENDING_SEED, &index.to_le_bytes()]) }
+pub fn vrf_network_state() -> Pubkey {
+    Pubkey::find_program_address(&[NETWORK_STATE_SEED], &ORAO_VRF_ID).0
+}
+pub fn vrf_request(seed: &[u8; 32]) -> Pubkey {
+    Pubkey::find_program_address(&[REQUEST_SEED, seed], &ORAO_VRF_ID).0
+}
+/// ORAO treasury, read from its network state (disc 8 | authority 32 | treasury 32 | fee u64 ...).
+pub fn vrf_treasury() -> Pubkey {
+    Pubkey::try_from(&ORAO_NETWORK_STATE[40..72]).unwrap()
+}
+pub fn random_nonce() -> [u8; 32] {
+    Keypair::new().pubkey().to_bytes()
+}
 pub fn program_data() -> Pubkey {
     Pubkey::find_program_address(&[abyss_haul::ID.as_ref()], &bpf_loader_upgradeable::ID).0
 }
@@ -100,6 +118,14 @@ impl H {
         let mut svm = LiteSVM::new();
         svm.add_program(abyss_haul::ID, PROGRAM_SO).unwrap();
         svm.add_program(MPL_CORE_ID, CORE_SO).unwrap();
+        svm.add_program(ORAO_VRF_ID, ORAO_SO).unwrap();
+        let lamports = svm.minimum_balance_for_rent_exemption(ORAO_NETWORK_STATE.len());
+        svm.set_account(
+            vrf_network_state(),
+            Account { lamports, data: ORAO_NETWORK_STATE.to_vec(), owner: ORAO_VRF_ID, executable: false, rent_epoch: 0 },
+        )
+        .unwrap();
+        svm.airdrop(&vrf_treasury(), SOL).unwrap();
         let mut clock = svm.get_sysvar::<Clock>();
         clock.unix_timestamp = T0;
         svm.set_sysvar(&clock);
@@ -224,32 +250,45 @@ impl H {
         self.svm.set_sysvar(&clock);
     }
 
-    pub fn write_randomness(&mut self, key: Pubkey, seed_slot: u64, reveal_slot: u64, value: [u8; 32]) {
-        let mut data = vec![0u8; RANDOMNESS_ACCOUNT_LEN];
-        data[..8].copy_from_slice(&RANDOMNESS_DISCRIMINATOR);
-        data[8 + 96..8 + 104].copy_from_slice(&seed_slot.to_le_bytes());
-        data[8 + 136..8 + 144].copy_from_slice(&reveal_slot.to_le_bytes());
-        data[8 + 144..8 + 176].copy_from_slice(&value);
-        let lamports = self.svm.minimum_balance_for_rent_exemption(data.len());
-        self.svm
-            .set_account(key, Account { lamports, data, owner: SWITCHBOARD_ID, executable: false, rent_epoch: 0 })
-            .unwrap();
+    /// What ORAO's fulfilment authorities do: mark a pending request fulfilled with `value`
+    /// (the first 32 of the 64 randomness bytes; the program uses those).
+    pub fn fulfill(&mut self, request: Pubkey, value: [u8; 32]) {
+        let seed: [u8; 32] = self.svm.get_account(&request).unwrap().data[41..73].try_into().unwrap();
+        self.write_fulfilled(request, seed, value);
     }
 
-    /// A randomness account committed in the previous slot, unrevealed.
-    pub fn fresh_randomness(&mut self) -> Pubkey {
-        let key = Keypair::new().pubkey();
-        let slot = self.slot();
-        self.write_randomness(key, slot - 1, 0, [0; 32]);
-        key
+    /// Writes a fulfilled request with an arbitrary seed (to test forged fulfilments).
+    pub fn write_fulfilled(&mut self, request: Pubkey, seed: [u8; 32], value: [u8; 32]) {
+        let mut acc = self.svm.get_account(&request).unwrap();
+        let len = acc.data.len();
+        let client: [u8; 32] = acc.data[9..41].try_into().unwrap();
+        let mut data = RANDOMNESS_V2_DISCRIMINATOR.to_vec();
+        data.push(1); // RequestAccount::Fulfilled
+        data.extend_from_slice(&client);
+        data.extend_from_slice(&seed);
+        data.extend_from_slice(&value);
+        data.extend_from_slice(&[0u8; 32]);
+        data.resize(len, 0);
+        acc.data = data;
+        self.svm.set_account(request, acc).unwrap();
     }
 
-    /// Advances one slot and reveals `value` on a committed randomness account.
-    pub fn reveal(&mut self, key: Pubkey, value: [u8; 32]) {
-        self.warp(1);
-        let seed = u64::from_le_bytes(self.svm.get_account(&key).unwrap().data[8 + 96..8 + 104].try_into().unwrap());
-        let slot = self.slot();
-        self.write_randomness(key, seed, slot, value);
+    /// A direct ORAO request_v2 (e.g. an attacker pre-requesting someone else's seed).
+    pub fn orao_request(&mut self, payer: &Keypair, seed: [u8; 32]) -> TxResult {
+        let mut data = vec![38, 151, 209, 6, 195, 102, 28, 217];
+        data.extend_from_slice(&seed);
+        let ix = Instruction {
+            program_id: ORAO_VRF_ID,
+            accounts: vec![
+                AccountMeta::new(payer.pubkey(), true),
+                AccountMeta::new(vrf_network_state(), false),
+                AccountMeta::new(vrf_treasury(), false),
+                AccountMeta::new(vrf_request(&seed), false),
+                AccountMeta::new_readonly(system_program::ID, false),
+            ],
+            data,
+        };
+        self.send(&[ix], &[payer])
     }
 
     // ---------------------------------------------------------------- reads
@@ -346,10 +385,16 @@ impl H {
         self.send(&[ix], &[funder])
     }
 
-    pub fn mint_commit(&mut self, payer: &Keypair, randomness: Pubkey) -> TxResult {
+    /// ORAO request account a mint commit with `nonce` by `payer` will create.
+    pub fn mint_request(&self, payer: &Pubkey, nonce: &[u8; 32]) -> Pubkey {
+        vrf_request(&orao::mint_seed(self.pool().minted_count, payer, nonce))
+    }
+
+    pub fn mint_commit(&mut self, payer: &Keypair, nonce: [u8; 32]) -> TxResult {
         let index = self.pool().minted_count;
+        let request = vrf_request(&orao::mint_seed(index, &payer.pubkey(), &nonce));
         let ix = self.ix(
-            abyss_haul::instruction::MintCommit {}.data(),
+            abyss_haul::instruction::MintCommit { nonce }.data(),
             abyss_haul::accounts::MintCommit {
                 payer: payer.pubkey(),
                 config: config_pda(),
@@ -357,7 +402,10 @@ impl H {
                 vault: vault_pda(),
                 treasury: self.treasury,
                 checkpoints: self.checkpoints,
-                randomness,
+                vrf_network_state: vrf_network_state(),
+                vrf_treasury: vrf_treasury(),
+                vrf_request: request,
+                vrf_program: ORAO_VRF_ID,
                 pending: pending_pda(index),
                 system_program: system_program::ID,
                 event_authority: event_authority(),
@@ -379,7 +427,7 @@ impl H {
                 config: config_pda(),
                 pool: pool_pda(),
                 pending: pending_pda(index),
-                randomness: pending.randomness,
+                vrf_request: pending.randomness,
                 asset,
                 sub: sub_pda(&asset),
                 collection: self.collection,
@@ -394,12 +442,13 @@ impl H {
         self.send(&[ix], &[cranker])
     }
 
-    /// Commit + reveal with a chosen roll (tier by cumulative odds). Returns the new asset.
+    /// Commit + ORAO fulfilment + reveal with a chosen roll (tier by cumulative odds).
     pub fn mint(&mut self, player: &Keypair, roll: u64) -> Result<Pubkey, String> {
         let index = self.pool().minted_count;
-        let r = self.fresh_randomness();
-        self.mint_commit(player, r)?;
-        self.reveal(r, value_for_roll(roll, 0));
+        let nonce = random_nonce();
+        let request = self.mint_request(&player.pubkey(), &nonce);
+        self.mint_commit(player, nonce)?;
+        self.fulfill(request, value_for_roll(roll, 0));
         self.mint_reveal(player, index)?;
         Ok(asset_pda(index))
     }
@@ -569,14 +618,24 @@ impl H {
         self.send(&[ix], &[owner])
     }
 
-    pub fn expedition_commit(&mut self, owner: &Keypair, asset: &Pubkey, randomness: Pubkey) -> TxResult {
+    /// ORAO request account an expedition return commit with `nonce` will create.
+    pub fn expedition_request(&self, asset: &Pubkey, nonce: &[u8; 32]) -> Pubkey {
+        vrf_request(&orao::expedition_seed(&sub_pda(asset), self.sub(asset).away_until, nonce))
+    }
+
+    pub fn expedition_commit(&mut self, owner: &Keypair, asset: &Pubkey, nonce: [u8; 32]) -> TxResult {
+        let request = self.expedition_request(asset, &nonce);
         let ix = self.ix(
-            abyss_haul::instruction::ExpeditionReturnCommit {}.data(),
+            abyss_haul::instruction::ExpeditionReturnCommit { nonce }.data(),
             abyss_haul::accounts::ExpeditionReturnCommit {
                 owner: owner.pubkey(),
                 harbor: harbor_pda(&owner.pubkey()),
                 sub: sub_pda(asset),
-                randomness,
+                vrf_network_state: vrf_network_state(),
+                vrf_treasury: vrf_treasury(),
+                vrf_request: request,
+                vrf_program: ORAO_VRF_ID,
+                system_program: system_program::ID,
             }
             .to_account_metas(None),
         );
@@ -594,7 +653,7 @@ impl H {
                 checkpoints: self.checkpoints,
                 harbor: sub.harbor,
                 sub: sub_pda(asset),
-                randomness: sub.randomness,
+                vrf_request: sub.randomness,
                 event_authority: event_authority(),
                 program: abyss_haul::ID,
             }
@@ -603,11 +662,12 @@ impl H {
         self.send(&[ix], &[cranker])
     }
 
-    /// Full return: commit, reveal `roll`, settle.
+    /// Full return: commit, ORAO fulfilment with `roll` (barnacle bit 3), reveal.
     pub fn expedition_return(&mut self, owner: &Keypair, asset: &Pubkey, roll: u64) -> TxResult {
-        let r = self.fresh_randomness();
-        self.expedition_commit(owner, asset, r)?;
-        self.reveal(r, value_for_roll(roll, 3));
+        let nonce = random_nonce();
+        let request = self.expedition_request(asset, &nonce);
+        self.expedition_commit(owner, asset, nonce)?;
+        self.fulfill(request, value_for_roll(roll, 3));
         self.expedition_reveal(owner, asset)
     }
 

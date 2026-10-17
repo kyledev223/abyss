@@ -4,12 +4,12 @@ use crate::constants::*;
 use crate::economics::roll_tier;
 use crate::error::ErrorCode;
 use crate::events::*;
-use crate::external::{core, switchboard};
+use crate::external::{core, orao};
 use crate::ops;
 use crate::state::*;
 
-/// Pays the mint price and commits to a Switchboard randomness account. The fee is taken here,
-/// before the outcome exists, and there is no refund path, so a bad roll cannot be aborted.
+/// Pays the mint price and requests ORAO randomness in the same instruction. The fee is taken
+/// before the outcome exists and there is no refund path, so a bad roll cannot be aborted.
 #[event_cpi]
 #[derive(Accounts)]
 pub struct MintCommit<'info> {
@@ -26,8 +26,18 @@ pub struct MintCommit<'info> {
     pub treasury: UncheckedAccount<'info>,
     #[account(mut, address = config.checkpoints)]
     pub checkpoints: AccountLoader<'info, Checkpoints>,
-    /// CHECK: Switchboard randomness account; owner, discriminator and freshness checked.
-    pub randomness: UncheckedAccount<'info>,
+    /// CHECK: ORAO network state (seed-checked under the ORAO program).
+    #[account(mut, seeds = [orao::NETWORK_STATE_SEED], bump, seeds::program = ORAO_VRF_ID)]
+    pub vrf_network_state: UncheckedAccount<'info>,
+    /// CHECK: ORAO treasury; ORAO checks it against its network state.
+    #[account(mut)]
+    pub vrf_treasury: UncheckedAccount<'info>,
+    /// CHECK: ORAO request account, created by ORAO at PDA(["orao-vrf-randomness-request", seed]).
+    #[account(mut)]
+    pub vrf_request: UncheckedAccount<'info>,
+    /// CHECK: address-checked program.
+    #[account(address = ORAO_VRF_ID)]
+    pub vrf_program: UncheckedAccount<'info>,
     #[account(
         init,
         payer = payer,
@@ -39,7 +49,7 @@ pub struct MintCommit<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handle_mint_commit(mut ctx: Context<MintCommit>) -> Result<()> {
+pub fn handle_mint_commit(mut ctx: Context<MintCommit>, nonce: [u8; 32]) -> Result<()> {
     let a = &mut ctx.accounts;
     let p = &a.config.params;
     require!(!a.config.paused_mint, ErrorCode::MintPaused);
@@ -48,7 +58,17 @@ pub fn handle_mint_commit(mut ctx: Context<MintCommit>) -> Result<()> {
         ErrorCode::SupplyCapReached
     );
     let clock = Clock::get()?;
-    let seed_slot = switchboard::check_commit(&a.randomness, clock.slot)?;
+    let mint_index = a.pool.minted_count;
+    let vrf_seed = orao::mint_seed(mint_index, &a.payer.key(), &nonce);
+    orao::request(
+        &a.vrf_program,
+        &a.payer,
+        &a.vrf_network_state,
+        &a.vrf_treasury,
+        &a.vrf_request,
+        &a.system_program,
+        vrf_seed,
+    )?;
 
     let (to_pool, to_treasury) = {
         let mut cps = a.checkpoints.load_mut()?;
@@ -65,19 +85,18 @@ pub fn handle_mint_commit(mut ctx: Context<MintCommit>) -> Result<()> {
     };
     ops::transfer(&a.payer, &a.pending.to_account_info(), MINT_RENT_DEPOSIT)?;
 
-    let mint_index = a.pool.minted_count;
     a.pending.set_inner(PendingMint {
         payer: a.payer.key(),
         mint_index,
-        randomness: a.randomness.key(),
-        seed_slot,
+        randomness: a.vrf_request.key(),
+        vrf_seed,
         committed_at: clock.unix_timestamp,
         bump: ctx.bumps.pending,
     });
     a.pool.minted_count += 1;
     a.pool.pending_mints += 1;
     let event_0 = FeePaid { payer: a.payer.key(), kind: FeeKind::Mint, amount: p.mint_price, to_pool, to_treasury };
-    let event_1 = MintCommitted { payer: a.payer.key(), mint_index, randomness: a.randomness.key() };
+    let event_1 = MintCommitted { payer: a.payer.key(), mint_index, randomness: a.vrf_request.key() };
     emit_cpi!(event_0);
     emit_cpi!(event_1);
     Ok(())
@@ -105,9 +124,9 @@ pub struct MintReveal<'info> {
         bump = pending.bump,
     )]
     pub pending: Account<'info, PendingMint>,
-    /// CHECK: address-checked against the commitment; parsed leniently (see switchboard.rs).
+    /// CHECK: address-checked against the commitment; parsed leniently (see orao.rs).
     #[account(address = pending.randomness)]
-    pub randomness: UncheckedAccount<'info>,
+    pub vrf_request: UncheckedAccount<'info>,
     /// CHECK: created by Core at this PDA.
     #[account(mut, seeds = [ASSET_SEED, &pending.mint_index.to_le_bytes()], bump)]
     pub asset: UncheckedAccount<'info>,
@@ -135,7 +154,7 @@ pub fn handle_mint_reveal(mut ctx: Context<MintReveal>) -> Result<()> {
     let a = &mut ctx.accounts;
     let p = &a.config.params;
     let now = ops::now()?;
-    let (tier, fallback) = match switchboard::revealed_value(&a.randomness, a.pending.seed_slot) {
+    let (tier, fallback) = match orao::fulfilled_value(&a.vrf_request, &a.pending.vrf_seed) {
         Some(value) => (roll_tier(&value, &p.tier_odds_bps), false),
         None => {
             require!(
@@ -187,7 +206,7 @@ pub fn handle_mint_reveal(mut ctx: Context<MintReveal>) -> Result<()> {
         away_until: 0,
         away_hours: 0,
         randomness: Pubkey::default(),
-        seed_slot: 0,
+        vrf_seed: [0; 32],
         committed_at: 0,
         bump: ctx.bumps.sub,
     });

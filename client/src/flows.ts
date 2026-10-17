@@ -1,110 +1,80 @@
 /**
- * Multi-step player flows. Each returns unsigned transactions plus any extra keypair signers, so the
- * same code serves a browser wallet, scripts and the keeper.
+ * Multi-step player flows. Each returns unsigned transactions, so the same code serves a browser
+ * wallet, scripts and the keeper.
  */
-import { Keypair, PublicKey, VersionedTransaction } from '@solana/web3.js';
+import { PublicKey, VersionedTransaction } from '@solana/web3.js';
 import type { AbyssClient } from './client';
-import { MEASURED_CU, REVEAL_TIMEOUT, SWITCHBOARD_CU } from './constants';
+import { MEASURED_CU, REVEAL_TIMEOUT } from './constants';
 import type { FeeOptions } from './fees';
-import {
-  createRandomnessIx,
-  randomnessCommitIx,
-  randomnessInUse,
-  randomnessRevealIx,
-  type SwitchboardCtx,
-} from './switchboard';
-
-export interface Prepared {
-  tx: VersionedTransaction;
-  /** Keypairs that must co-sign besides the fee payer / wallet. */
-  signers: Keypair[];
-}
-
-/** A randomness account the player can commit now: `existing` if free, otherwise a new one to create. */
-export async function prepareRandomness(
-  client: AbyssClient,
-  ctx: SwitchboardCtx,
-  payer: PublicKey,
-  existing?: PublicKey,
-  fee?: FeeOptions,
-): Promise<{ address: PublicKey; create?: Prepared }> {
-  if (existing && !(await randomnessInUse(client, existing))) return { address: existing };
-  const { keypair, address, ix } = await createRandomnessIx(ctx, payer);
-  const tx = await client.tx(payer, [ix], SWITCHBOARD_CU, fee);
-  return { address, create: { tx, signers: [keypair] } };
-}
+import { expeditionSeed, mintSeed, oraoRequest, randomNonce, waitForFulfillment } from './orao';
 
 /**
- * Pays for a mint and commits the randomness. If another mint lands first the mint index moves and
- * the transaction fails harmlessly; call again to rebuild with the new index.
+ * Pays for a mint and requests ORAO randomness in one transaction. If another mint lands first the
+ * mint index moves and the transaction fails harmlessly; call again to rebuild with the new index.
  */
 export async function prepareMintCommit(
   client: AbyssClient,
-  ctx: SwitchboardCtx,
   payer: PublicKey,
-  randomness: PublicKey,
   fee?: FeeOptions,
-): Promise<{ mintIndex: bigint; commit: Prepared }> {
+): Promise<{ mintIndex: bigint; request: PublicKey; tx: VersionedTransaction }> {
   const mintIndex = BigInt((await client.pool()).mintedCount.toString());
-  const ixs = [await randomnessCommitIx(ctx, randomness, payer), await client.mintCommitIx(payer, randomness, mintIndex)];
-  return { mintIndex, commit: { tx: await client.tx(payer, ixs, MEASURED_CU.mintCommit + SWITCHBOARD_CU, fee), signers: [] } };
+  const nonce = randomNonce();
+  const request = oraoRequest(mintSeed(mintIndex, payer, Uint8Array.from(nonce)));
+  const ix = await client.mintCommitIx(payer, nonce, mintIndex);
+  return { mintIndex, request, tx: await client.tx(payer, [ix], MEASURED_CU.mintCommit, fee) };
 }
 
 /**
- * Reveals a pending mint. Anyone may send it (the caller is reimbursed rent). After REVEAL_TIMEOUT
- * with no reveal, pass `fallback: true` to settle at the lowest tier without Switchboard.
+ * Reveals a pending mint once ORAO has fulfilled it. Anyone may send it (the caller is reimbursed
+ * rent). With no fulfilment REVEAL_TIMEOUT after commit, it settles at the lowest tier instead.
  */
 export async function prepareMintReveal(
   client: AbyssClient,
-  ctx: SwitchboardCtx | undefined,
   cranker: PublicKey,
   mintIndex: bigint,
-  { fallback = false, fee }: { fallback?: boolean; fee?: FeeOptions } = {},
-): Promise<Prepared> {
+  { waitMs = 90_000, fee }: { waitMs?: number; fee?: FeeOptions } = {},
+): Promise<VersionedTransaction> {
   const pending = await client.pendingMint(mintIndex);
   if (!pending) throw new Error(`no pending mint #${mintIndex}`);
-  const ixs = [];
-  if (!fallback) {
-    if (!ctx) throw new Error('Switchboard context required unless fallback');
-    ixs.push(await randomnessRevealIx(ctx, pending.randomness, cranker));
+  const fulfilled = await waitForFulfillment(client.connection, pending.randomness, { timeoutMs: waitMs });
+  if (!fulfilled && !fallbackAvailable(pending.committedAt.toNumber())) {
+    throw new Error('randomness not fulfilled yet; retry, or wait for the 1 h fallback');
   }
-  ixs.push(await client.mintRevealIx(cranker, mintIndex, pending.payer, pending.randomness));
-  const cu = MEASURED_CU.mintReveal + (fallback ? 0 : SWITCHBOARD_CU);
-  return { tx: await client.tx(cranker, ixs, cu, fee), signers: [] };
+  const ix = await client.mintRevealIx(cranker, mintIndex, pending.payer, pending.randomness);
+  return client.tx(cranker, [ix], MEASURED_CU.mintReveal, fee);
 }
 
 export async function prepareExpeditionReturnCommit(
   client: AbyssClient,
-  ctx: SwitchboardCtx,
   owner: PublicKey,
   asset: PublicKey,
-  randomness: PublicKey,
   fee?: FeeOptions,
-): Promise<Prepared> {
-  const ixs = [await randomnessCommitIx(ctx, randomness, owner), await client.expeditionReturnCommitIx(owner, asset, randomness)];
-  return { tx: await client.tx(owner, ixs, MEASURED_CU.expeditionReturnCommit + SWITCHBOARD_CU, fee), signers: [] };
+): Promise<{ request: PublicKey; tx: VersionedTransaction }> {
+  const sub = await client.sub(asset);
+  if (!sub) throw new Error('unknown sub');
+  const nonce = randomNonce();
+  const request = oraoRequest(expeditionSeed(client.pda.sub(asset), BigInt(sub.awayUntil.toString()), Uint8Array.from(nonce)));
+  const ix = await client.expeditionReturnCommitIx(owner, asset, nonce, BigInt(sub.awayUntil.toString()));
+  return { request, tx: await client.tx(owner, [ix], MEASURED_CU.expeditionReturnCommit, fee) };
 }
 
 export async function prepareExpeditionReturnReveal(
   client: AbyssClient,
-  ctx: SwitchboardCtx | undefined,
   cranker: PublicKey,
   asset: PublicKey,
-  { fallback = false, fee }: { fallback?: boolean; fee?: FeeOptions } = {},
-): Promise<Prepared> {
+  { waitMs = 90_000, fee }: { waitMs?: number; fee?: FeeOptions } = {},
+): Promise<VersionedTransaction> {
   const sub = await client.sub(asset);
   if (!sub) throw new Error('unknown sub');
   const harbor = await client.program.account.harbor.fetch(sub.harbor);
-  const ixs = [];
-  if (!fallback) {
-    if (!ctx) throw new Error('Switchboard context required unless fallback');
-    ixs.push(await randomnessRevealIx(ctx, sub.randomness, cranker));
+  const fulfilled = await waitForFulfillment(client.connection, sub.randomness, { timeoutMs: waitMs });
+  if (!fulfilled && !fallbackAvailable(sub.committedAt.toNumber())) {
+    throw new Error('randomness not fulfilled yet; retry, or wait for the 1 h fallback');
   }
-  ixs.push(await client.expeditionReturnRevealIx(cranker, asset, harbor.owner, sub.randomness));
-  const cu = MEASURED_CU.expeditionReturnReveal + (fallback ? 0 : SWITCHBOARD_CU);
-  return { tx: await client.tx(cranker, ixs, cu, fee), signers: [] };
+  const ix = await client.expeditionReturnRevealIx(cranker, asset, harbor.owner, sub.randomness);
+  return client.tx(cranker, [ix], MEASURED_CU.expeditionReturnReveal, fee);
 }
 
-/** True once a commitment made at `committedAt` may settle via the no-reveal fallback. */
+/** True once a commitment made at `committedAt` may settle via the no-fulfilment fallback. */
 export const fallbackAvailable = (committedAt: number, now = Math.floor(Date.now() / 1000)) =>
   now >= committedAt + REVEAL_TIMEOUT;

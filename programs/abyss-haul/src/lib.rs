@@ -63,8 +63,8 @@ pub mod abyss_haul {
     }
 
     // Minting
-    pub fn mint_commit(ctx: Context<MintCommit>) -> Result<()> {
-        instructions::mint::handle_mint_commit(ctx)
+    pub fn mint_commit(ctx: Context<MintCommit>, nonce: [u8; 32]) -> Result<()> {
+        instructions::mint::handle_mint_commit(ctx, nonce)
     }
 
     pub fn mint_reveal(ctx: Context<MintReveal>) -> Result<()> {
@@ -106,8 +106,8 @@ pub mod abyss_haul {
         instructions::expedition::handle_expedition_start(ctx, hours)
     }
 
-    pub fn expedition_return_commit(ctx: Context<ExpeditionReturnCommit>) -> Result<()> {
-        instructions::expedition::handle_expedition_return_commit(ctx)
+    pub fn expedition_return_commit(ctx: Context<ExpeditionReturnCommit>, nonce: [u8; 32]) -> Result<()> {
+        instructions::expedition::handle_expedition_return_commit(ctx, nonce)
     }
 
     pub fn expedition_return_reveal(ctx: Context<ExpeditionReturnReveal>) -> Result<()> {
