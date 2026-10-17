@@ -25,7 +25,9 @@ export function SiteHeader() {
   return (
     <header className="border-b border-kelp/60">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-4">
-        <Link href="/" className="font-stencil text-2xl font-extrabold tracking-wide text-foam no-underline">
+        <Link href="/" className="flex items-center gap-2.5 font-stencil text-2xl font-extrabold tracking-wide text-foam no-underline">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo.svg" alt="" width={32} height={32} />
           Abyss Haul
         </Link>
         <nav aria-label="Main" className="order-3 flex w-full gap-5 overflow-x-auto text-[0.95rem] md:order-none md:w-auto">
