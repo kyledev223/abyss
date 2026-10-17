@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+/*
+ * Abyss Haul tokens.
+ * Plankton (glow) marks things that are live: sonar blips, earnings, the primary action.
+ * Lantern (amber) marks money leaving your wallet: prices, fees, risk.
+ */
+@theme {
+  --color-abyss: #03141a;
+  --color-trench: #0b2730;
+  --color-trench-2: #0f313b;
+  --color-kelp: #1d4a53;
+  --color-silt: #8fb0b2;
+  --color-foam: #dcefef;
+  --color-plankton: #7cf5da;
+  --color-plankton-dim: #2f8f7d;
+  --color-lantern: #f4c46a;
+  --color-flare: #ff8a7a;
+
+  --font-display: var(--font-big-shoulders), "Arial Narrow", sans-serif;
+  --font-stencil: var(--font-big-shoulders-stencil), var(--font-big-shoulders), sans-serif;
+  --font-body: var(--font-atkinson), system-ui, sans-serif;
+
+  --radius-hull: 10px;
+}
+
+/* Element styles live in the base layer so Tailwind utilities can override them. */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    background: var(--color-abyss);
+  }
+
+  body {
+    background:
+      radial-gradient(120% 60% at 70% -10%, #0e3a44 0%, transparent 60%),
+      linear-gradient(180deg, #072029 0%, var(--color-abyss) 38%, #020e12 100%);
+    background-attachment: fixed;
+    color: var(--color-foam);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-plankton);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-plankton-dim);
+    color: var(--color-abyss);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Wallet adapter modal and button, recoloured to the palette. */
+.wallet-adapter-button {
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  height: 40px !important;
+  border-radius: var(--radius-hull) !important;
+  background: transparent !important;
+  border: 1px solid var(--color-plankton-dim) !important;
+  color: var(--color-plankton) !important;
+  font-size: 0.95rem !important;
+  padding: 0 16px !important;
+}
+.wallet-adapter-button:not([disabled]):hover {
+  background: rgba(124, 245, 218, 0.08) !important;
+}
+.wallet-adapter-modal-wrapper {
+  background: var(--color-trench) !important;
+  border: 1px solid var(--color-kelp);
+  font-family: var(--font-body) !important;
+}
+.wallet-adapter-modal-title {
+  font-family: var(--font-display) !important;
+  font-size: 1.75rem !important;
+}
+.wallet-adapter-dropdown-list {
+  background: var(--color-trench) !important;
+  font-family: var(--font-body) !important;
+}
+
+/* The sonar sweep (the one orchestrated motion) is SVG-animated in components/sonar.tsx. */
