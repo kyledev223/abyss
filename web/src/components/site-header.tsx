@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SocialButtons } from "@/components/social-links";
 
 // The wallet button reads window; render it on the client only.
 const WalletMultiButton = dynamic(
@@ -42,7 +43,8 @@ export function SiteHeader() {
             );
           })}
         </nav>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <SocialButtons />
           <WalletMultiButton />
         </div>
       </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SocialFooter } from "@/components/social-links";
 import { IS_PLAY_MONEY } from "@/lib/config";
 
 /** Risk disclaimer, in our own words. Shown on every page. */
@@ -45,6 +46,7 @@ export function SiteFooter() {
           <a href="https://github.com/kyledev223/abyss" className="hover:text-foam">
             Source code
           </a>
+          <SocialFooter />
         </nav>
       </div>
     </footer>
