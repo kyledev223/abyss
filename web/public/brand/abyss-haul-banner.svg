@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1500 500" width="1500" height="500">
+  <!-- X banner. The profile picture covers the bottom-left, so text starts at x = 470. -->
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0e3a44"/>
+      <stop offset="0.45" stop-color="#062029"/>
+      <stop offset="1" stop-color="#020c10"/>
+    </linearGradient>
+    <linearGradient id="ray" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7cf5da" stop-opacity=".10"/>
+      <stop offset="1" stop-color="#7cf5da" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="1" x2="0.6" y2="0">
+      <stop offset="0" stop-color="#7cf5da" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#7cf5da" stop-opacity="0"/>
+    </linearGradient>
+    <symbol id="sub" viewBox="0 0 64 64">
+      <path d="M13 31 L5 24 L9 33 Z M13 41 L5 48 L9 39 Z"/>
+      <rect x="28" y="20" width="12" height="11" rx="3.5"/>
+      <path d="M36.5 20 V14.5 H41" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="10" y="28" width="46" height="16" rx="8"/>
+      <circle cx="27" cy="36" r="2.6" fill="#03141a"/>
+      <circle cx="35" cy="36" r="2.6" fill="#03141a"/>
+      <circle cx="43" cy="36" r="2.6" fill="#03141a"/>
+    </symbol>
+  </defs>
+
+  <rect width="1500" height="500" fill="url(#water)"/>
+  <!-- light from the surface -->
+  <path d="M220 0 L300 0 L520 500 L360 500 Z" fill="url(#ray)"/>
+  <path d="M560 0 L610 0 L760 500 L660 500 Z" fill="url(#ray)" opacity=".7"/>
+  <path d="M900 0 L980 0 L1060 500 L900 500 Z" fill="url(#ray)" opacity=".5"/>
+
+  <!-- plankton -->
+  <g fill="#7cf5da">
+    <circle cx="140" cy="90" r="1.6" opacity=".5"/><circle cx="400" cy="60" r="1.2" opacity=".4"/>
+    <circle cx="690" cy="430" r="1.8" opacity=".35"/><circle cx="820" cy="80" r="1.3" opacity=".5"/>
+    <circle cx="960" cy="440" r="2" opacity=".4"/><circle cx="1040" cy="60" r="1.4" opacity=".45"/>
+    <circle cx="1460" cy="90" r="1.8" opacity=".5"/><circle cx="1400" cy="460" r="1.5" opacity=".35"/>
+    <circle cx="1240" cy="40" r="1.2" opacity=".4"/><circle cx="880" cy="300" r="1.1" opacity=".3"/>
+    <circle cx="1100" cy="470" r="1.6" opacity=".4"/><circle cx="1330" cy="250" r="1.2" opacity=".35"/>
+    <circle cx="60" cy="250" r="1.4" opacity=".3"/><circle cx="300" cy="200" r="1.1" opacity=".3"/>
+  </g>
+
+  <!-- sonar -->
+  <g transform="translate(1185 262)" fill="none" stroke="#1d4a53">
+    <circle r="90" stroke-width="2"/>
+    <circle r="170" stroke-width="1.5" stroke-dasharray="3 9"/>
+    <circle r="250" stroke-width="2"/>
+    <circle r="330" stroke-width="1.5" stroke-dasharray="3 9"/>
+    <path d="M0 0 L250 0 A250 250 0 0 0 191.5 -160.7 Z" fill="url(#beam)" stroke="none" transform="rotate(-18)"/>
+    <path d="M0 0 L250 0" stroke="#7cf5da" stroke-width="1.5" opacity=".6" transform="rotate(-18)"/>
+  </g>
+
+  <!-- the fleet, fading with depth -->
+  <use href="#sub" x="880"  y="70"  width="70"  height="70"  color="#7cf5da" fill="#7cf5da" opacity=".28"/>
+  <use href="#sub" x="1380" y="300" width="80"  height="80"  color="#7cf5da" fill="#7cf5da" opacity=".32"/>
+  <use href="#sub" x="1250" y="350" width="105" height="105" color="#7cf5da" fill="#7cf5da" opacity=".5"/>
+  <use href="#sub" x="1290" y="90"  width="130" height="130" color="#7cf5da" fill="#7cf5da" opacity=".72"/>
+  <use href="#sub" x="1065" y="160" width="215" height="215" color="#7cf5da" fill="#7cf5da"/>
+
+  <!-- copy -->
+  <text x="470" y="230" font-family="Big Shoulders Stencil" font-weight="800" font-size="78" fill="#dcefef" letter-spacing="2">Send subs down.</text>
+  <text x="470" y="310" font-family="Big Shoulders Stencil" font-weight="800" font-size="78" fill="#dcefef" letter-spacing="2">Haul up the pool.</text>
+  <text x="473" y="358" font-family="Atkinson Hyperlegible Next" font-size="24" fill="#8fb0b2">NFT submarines on Solana</text>
+</svg>
