@@ -26,10 +26,38 @@ export const events = pgTable(
   ],
 );
 
-export const db = process.env.DATABASE_URL ? drizzle(neon(process.env.DATABASE_URL)) : null;
+const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+export const db = sql ? drizzle(sql) : null;
+
+/**
+ * Creates the table on first use (idempotent), so a fresh Vercel/Neon database needs no manual
+ * migration step. Mirrors the `events` schema above.
+ */
+let ready: Promise<unknown> | undefined;
+function ensureSchema() {
+  if (!sql) return Promise.resolve();
+  ready ??= sql.transaction([
+    sql`CREATE TABLE IF NOT EXISTS events (
+      id serial PRIMARY KEY,
+      signature text NOT NULL,
+      event_index integer NOT NULL,
+      slot bigint NOT NULL,
+      block_time timestamptz,
+      name text NOT NULL,
+      data jsonb NOT NULL
+    )`,
+    sql`CREATE UNIQUE INDEX IF NOT EXISTS events_signature_index ON events (signature, event_index)`,
+    sql`CREATE INDEX IF NOT EXISTS events_name_time ON events (name, block_time)`,
+  ]).catch((e) => {
+    ready = undefined; // retry on the next call
+    throw e;
+  });
+  return ready;
+}
 
 export async function storeEvents(rows: DecodedEvent[]): Promise<number> {
   if (!db || rows.length === 0) return 0;
+  await ensureSchema();
   const inserted = await db
     .insert(events)
     .values(
@@ -49,6 +77,7 @@ export async function storeEvents(rows: DecodedEvent[]): Promise<number> {
 
 export async function latestEvents(limit: number, name?: string): Promise<DecodedEvent[]> {
   if (!db) return [];
+  await ensureSchema();
   const rows = await db
     .select()
     .from(events)

@@ -16,7 +16,7 @@ export function Hero() {
   return (
     <section id="surface" className="grid items-center gap-10 py-12 md:grid-cols-[1.35fr_1fr] md:py-20">
       <div>
-        <h1 className="font-stencil text-[clamp(2.9rem,5.3vw,4.7rem)] font-extrabold leading-[0.92] tracking-wide">
+        <h1 className="font-stencil text-[clamp(2.6rem,4.5vw,4.1rem)] font-extrabold leading-[0.95] tracking-wide">
           Send subs down.
           <br />
           Haul up the pool.

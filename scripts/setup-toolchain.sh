@@ -32,6 +32,9 @@ fi
 . "$NVM_DIR/nvm.sh"
 nvm install --lts >/dev/null
 nvm alias default 'lts/*' >/dev/null
+# nvm's installer only hooks ~/.bashrc, which non-interactive login shells ("bash -lc", as used by
+# `wsl ... -- bash -lc "..."`) skip; without this, Windows' node/npx on the PATH win.
+grep -q "nvm.sh" "$HOME/.profile" || printf '\nexport NVM_DIR="$HOME/.nvm"\n[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"\n' >> "$HOME/.profile"
 
 echo "---- versions ----"
 rustc --version
